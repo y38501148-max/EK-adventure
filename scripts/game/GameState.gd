@@ -92,9 +92,9 @@ func setup(config: Resource) -> void:
 	encounter_id = config.encounter_id
 	victory_gold_reward = max(0, config.victory_gold_reward)
 	victory_reward_claimed = false
-	_prepare_enemy_action()
-	last_event_log = "战斗开始。"
 	rng.seed = seed
+	_prepare_enemy_action(false)
+	last_event_log = "战斗开始。"
 	turn = 0
 	next_card_id = 1
 	draw_pile.clear()
@@ -415,7 +415,6 @@ func _perform_enemy_action() -> void:
 	enemy_action_countdown = 0
 	if enemy_attack <= 0:
 		last_event_log += " %s 本回合没有造成伤害。" % enemy_name
-		_advance_enemy_action()
 		return
 	if is_cheating:
 		has_lost = true
@@ -432,12 +431,11 @@ func _perform_enemy_action() -> void:
 		last_event_log += " %s 使用%s造成 %d 点伤害，进入骗分状态。" % [enemy_name, enemy_action_name, damage]
 	else:
 		last_event_log += " %s 使用%s造成 %d 点伤害。" % [enemy_name, enemy_action_name, damage]
-	_advance_enemy_action()
 
 func _is_combat_over() -> bool:
 	return has_lost or has_won
 
-func _prepare_enemy_action() -> void:
+func _prepare_enemy_action(use_random: bool = true) -> void:
 	if enemy_actions.is_empty():
 		enemy_action_name = "普通攻击"
 		enemy_action_damage_percent = 100
@@ -446,17 +444,17 @@ func _prepare_enemy_action() -> void:
 		enemy_attack = enemy_base_attack
 		return
 
-	var action := enemy_actions[enemy_action_index % enemy_actions.size()]
+	if use_random:
+		enemy_action_index = rng.randi_range(0, enemy_actions.size() - 1)
+	else:
+		enemy_action_index = clampi(enemy_action_index, 0, enemy_actions.size() - 1)
+
+	var action := enemy_actions[enemy_action_index]
 	enemy_action_name = str(action.get("name", "普通攻击"))
 	enemy_action_damage_percent = int(action.get("damage_percent", 100))
 	enemy_base_action_countdown = max(1, int(action.get("countdown", enemy_base_action_countdown)))
 	enemy_action_countdown = enemy_base_action_countdown
 	enemy_attack = int(round(float(enemy_base_attack * enemy_action_damage_percent) / 100.0))
-
-func _advance_enemy_action() -> void:
-	if enemy_actions.is_empty():
-		return
-	enemy_action_index = (enemy_action_index + 1) % enemy_actions.size()
 
 func _shuffle_discard_into_draw_if_low() -> void:
 	if draw_pile.size() > 3:

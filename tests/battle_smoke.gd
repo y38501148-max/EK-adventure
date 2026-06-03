@@ -129,14 +129,13 @@ func _test_monster_loader() -> void:
 		var state: Variant = GameStateScript.new()
 		state.setup(config)
 		state.begin_turn()
-		_expect(state.enemy_action_name == "普通攻击", "首个意图应为普通攻击")
-		_expect(state.enemy_action_countdown == 5, "普通攻击倒计时应为 5")
-		_expect(state.enemy_attack == 3, "普通攻击伤害应为 3")
-		state.end_turn()
-		state.begin_turn()
-		_expect(state.enemy_action_name == "WA", "第二个意图应为 WA")
-		_expect(state.enemy_action_countdown == 7, "WA 倒计时应为 7")
-		_expect(state.enemy_attack == 6, "WA 伤害应为基础攻击 3 的 200%")
+		_expect(["普通攻击", "WA"].has(state.enemy_action_name), "首个意图应从行动列表中随机选择")
+		_expect(
+			state.enemy_action_countdown == 5 or state.enemy_action_countdown == 7,
+			"随机意图应使用自身行动值"
+		)
+		_expect(state.enemy_attack == 3 or state.enemy_attack == 6, "随机意图应使用自身伤害倍率")
+		_test_random_enemy_actions()
 
 func _test_victory_reward(card: Resource) -> void:
 	var config: Resource = RunConfigScript.new()
@@ -165,6 +164,32 @@ func _test_victory_reward(card: Resource) -> void:
 	_expect(state.claim_victory_reward() == 100, "训练 Test 胜利后应获得 100 金钱")
 	_expect(state.player_gold == 100, "金钱应累计到角色状态")
 	_expect(state.claim_victory_reward() == 0, "胜利奖励不应重复领取")
+
+func _test_random_enemy_actions() -> void:
+	var config: Resource = RunConfigScript.new()
+	config.seed = 20260604
+	var deck: Array[Resource] = []
+	config.starting_deck = deck
+	config.enemy_attack = 0
+	config.enemy_action_countdown = 1
+	var actions: Array[Dictionary] = [
+		{"name": "普通攻击", "countdown": 1, "damage_percent": 100},
+		{"name": "WA", "countdown": 1, "damage_percent": 200},
+		{"name": "TLE", "countdown": 1, "damage_percent": 300}
+	]
+	config.enemy_actions = actions
+
+	var state: Variant = GameStateScript.new()
+	state.setup(config)
+	var names: Array[String] = []
+	for _index in range(6):
+		state.begin_turn()
+		names.append(state.enemy_action_name)
+		state.end_turn()
+
+	_expect(names != ["普通攻击", "WA", "TLE", "普通攻击", "WA", "TLE"], "怪物行动不应按列表顺序轮换")
+	for name in names:
+		_expect(["普通攻击", "WA", "TLE"].has(name), "随机行动必须来自行动列表")
 
 func _load_enumerate_card() -> Resource:
 	for card in CardMarkdownLoaderScript.load_all_cards():

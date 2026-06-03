@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://home_root_exploding_konjac"]
+[gd_scene load_steps=4 format=3 uid="uid://home_root_exploding_konjac"]
 
 [ext_resource type="Script" path="res://scripts/ui/HomeRoot.gd" id="1_home_root"]
 [ext_resource type="Texture2D" path="res://assets/art/avatar.png" id="2_avatar"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/home_menu_background.png" id="3_home_bg"]
 
 [node name="HomeRoot" type="Control"]
 layout_mode = 3
@@ -12,14 +13,25 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_home_root")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.035, 0.047, 0.075, 1)
+texture = ExtResource("3_home_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.018, 0.024, 0.22)
 
 [node name="Root" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -81,34 +93,6 @@ texture = ExtResource("2_avatar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TrainingListPanel" type="PanelContainer" parent="Root/Columns"]
-visible = false
-custom_minimum_size = Vector2(280, 0)
-layout_mode = 2
-
-[node name="TrainingMargin" type="MarginContainer" parent="Root/Columns/TrainingListPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
-
-[node name="TrainingRows" type="VBoxContainer" parent="Root/Columns/TrainingListPanel/TrainingMargin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="TrainingTitle" type="Label" parent="Root/Columns/TrainingListPanel/TrainingMargin/TrainingRows"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "训练列表"
-horizontal_alignment = 1
-
-[node name="TestTrainingButton" type="Button" parent="Root/Columns/TrainingListPanel/TrainingMargin/TrainingRows"]
-custom_minimum_size = Vector2(220, 46)
-layout_mode = 2
-text = "测试训练 Test"
-
 [node name="ActionColumn" type="VBoxContainer" parent="Root/Columns"]
 custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
@@ -162,7 +146,6 @@ text = "主页已载入。"
 vertical_alignment = 1
 
 [connection signal="pressed" from="Root/Columns/InfoColumn/AttributeButton" to="." method="_on_attribute_button_pressed"]
-[connection signal="pressed" from="Root/Columns/TrainingListPanel/TrainingMargin/TrainingRows/TestTrainingButton" to="." method="_on_test_training_button_pressed"]
 [connection signal="pressed" from="Root/Columns/ActionColumn/StoryButton" to="." method="_on_story_button_pressed"]
 [connection signal="pressed" from="Root/Columns/ActionColumn/TrainingButton" to="." method="_on_training_button_pressed"]
 [connection signal="pressed" from="Root/Columns/ActionColumn/SortieButton" to="." method="_on_sortie_button_pressed"]

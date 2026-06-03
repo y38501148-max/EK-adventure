@@ -1,13 +1,12 @@
 extends Control
 class_name HomeRoot
 
-signal training_test_requested
+signal training_menu_requested
 
 @onready var slot_label: Label = $Root/Columns/InfoColumn/SlotLabel
 @onready var hero_label: Label = $Root/Columns/InfoColumn/HeroLabel
 @onready var gold_label: Label = $Root/Columns/InfoColumn/GoldLabel
 @onready var level_label: Label = $Root/Columns/InfoColumn/LevelLabel
-@onready var training_list_panel: Control = $Root/Columns/TrainingListPanel
 @onready var status_label: Label = $Root/StatusPanel/StatusMargin/StatusLabel
 
 var save_slot: int = 1
@@ -34,12 +33,8 @@ func update_snapshot(state_snapshot: Dictionary) -> void:
 	_refresh()
 
 func _on_training_button_pressed() -> void:
-	training_list_panel.show()
-	status_label.text = "训练列表已打开。"
-
-func _on_test_training_button_pressed() -> void:
-	status_label.text = "进入测试训练 Test。"
-	training_test_requested.emit()
+	status_label.text = "正在进入训练菜单。"
+	training_menu_requested.emit()
 
 func _on_attribute_button_pressed() -> void:
 	_set_pending_status("属性")

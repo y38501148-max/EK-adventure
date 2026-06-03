@@ -2,6 +2,7 @@ extends Control
 
 const GAME_ROOT_SCENE := preload("res://scenes/game/GameRoot.tscn")
 const HOME_ROOT_SCENE := preload("res://scenes/home/HomeRoot.tscn")
+const TRAINING_MENU_SCENE := preload("res://scenes/home/TrainingMenu.tscn")
 
 @onready var menu_panel: VBoxContainer = $Root/MenuPanel
 @onready var slot_panel: VBoxContainer = $Root/SlotPanel
@@ -12,6 +13,7 @@ const HOME_ROOT_SCENE := preload("res://scenes/home/HomeRoot.tscn")
 @onready var subtitle_label: Label = $Root/MenuPanel/SubtitleLabel
 
 var home_root: Node
+var training_menu: Node
 var game_root: Node
 var slot_mode: StringName = &"new"
 var current_slot: int = 1
@@ -92,6 +94,9 @@ func _show_home(slot: int, snapshot: Dictionary = {}) -> void:
 	if game_root != null:
 		game_root.queue_free()
 		game_root = null
+	if training_menu != null:
+		training_menu.queue_free()
+		training_menu = null
 	if home_root != null:
 		home_root.queue_free()
 		home_root = null
@@ -99,11 +104,37 @@ func _show_home(slot: int, snapshot: Dictionary = {}) -> void:
 	if home_root.has_method("configure"):
 		home_root.configure(slot, snapshot)
 	game_mount.add_child(home_root)
-	home_root.connect("training_test_requested", _on_training_test_requested)
+	home_root.connect("training_menu_requested", _on_training_menu_requested)
+
+func _on_training_menu_requested() -> void:
+	if home_root != null:
+		home_root.hide()
+	if game_root != null:
+		game_root.queue_free()
+		game_root = null
+	if training_menu != null:
+		training_menu.queue_free()
+		training_menu = null
+	training_menu = TRAINING_MENU_SCENE.instantiate()
+	if training_menu.has_method("configure"):
+		training_menu.configure(current_slot, current_snapshot)
+	game_mount.add_child(training_menu)
+	training_menu.connect("back_requested", _on_training_menu_back_requested)
+	training_menu.connect("training_test_requested", _on_training_test_requested)
+
+func _on_training_menu_back_requested() -> void:
+	if training_menu != null:
+		training_menu.queue_free()
+		training_menu = null
+	if home_root != null:
+		home_root.show()
 
 func _on_training_test_requested() -> void:
 	if home_root != null:
 		home_root.hide()
+	if training_menu != null:
+		training_menu.queue_free()
+		training_menu = null
 	if game_root != null:
 		game_root.queue_free()
 		game_root = null
