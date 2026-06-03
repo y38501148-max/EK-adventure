@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://game_root_exploding_konjac"]
+[gd_scene load_steps=7 format=3 uid="uid://game_root_exploding_konjac"]
 
 [ext_resource type="Script" path="res://scripts/game/GameRoot.gd" id="1_game_root"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="2_hud"]
 [ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="3_hand_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MonsterView.tscn" id="4_monster_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlayerView.tscn" id="5_player_view"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/training_test_battle.png" id="6_battle_bg"]
 
 [node name="GameRoot" type="Control"]
 layout_mode = 3
@@ -15,14 +16,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_game_root")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0.11, 0.13, 1)
+texture = ExtResource("6_battle_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Root" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -54,11 +57,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 64
 alignment = 1
 
-[node name="PlayerView" parent="Root/EncounterArea/EncounterMargin/Battlefield" instance=ExtResource("5_player_view")]
-layout_mode = 2
-
-[node name="FieldSpacer" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
-custom_minimum_size = Vector2(80, 0)
+[node name="FieldSpacerLeft" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -71,6 +70,10 @@ alignment = 1
 [node name="MonsterView" parent="Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea" instance=ExtResource("4_monster_view")]
 layout_mode = 2
 
+[node name="FieldSpacerRight" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="HandPanel" type="PanelContainer" parent="Root"]
 custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
@@ -82,8 +85,16 @@ theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 14
 
-[node name="HandView" type="HBoxContainer" parent="Root/HandPanel/HandMargin" unique_name_in_owner=true]
+[node name="BottomRow" type="HBoxContainer" parent="Root/HandPanel/HandMargin"]
 layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="PlayerView" parent="Root/HandPanel/HandMargin/BottomRow" instance=ExtResource("5_player_view")]
+layout_mode = 2
+
+[node name="HandView" type="HBoxContainer" parent="Root/HandPanel/HandMargin/BottomRow" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
 script = ExtResource("3_hand_view")
 
@@ -92,3 +103,10 @@ custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 text = "框架已启动。"
 horizontal_alignment = 1
+
+[node name="BattleEndDialog" type="AcceptDialog" parent="."]
+title = "战斗结束"
+position = Vector2i(0, 36)
+size = Vector2i(360, 120)
+ok_button_text = "返回主菜单"
+dialog_text = "副本已完成，返回主菜单。"

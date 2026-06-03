@@ -19,3 +19,8 @@
 
 - 问题：手写 `.tscn` 后直接在脚本里用 `%SlotLabel` 读取节点，运行时出现 `Node not found`。
 - 避免：手写场景优先使用完整 `$Root/Columns/...` 路径；需要 `%Name` 时最好由 Godot 编辑器维护 `unique_name_in_owner`。
+
+## 忽略 `.import` 后的图片引用
+
+- 问题：`.tscn` 中用 `ext_resource type="Texture2D"` 直接引用新 PNG，但对应 `.import` 被忽略时，Godot 无头加载会报 `No loader found for resource`。
+- 避免：项目正式使用且需要导出的图片，应保留并强制提交对应 `.import`；被 `bd_resources/` 忽略的参考图不要直接作为 `.tscn` 的 `Texture2D` 资源引用。

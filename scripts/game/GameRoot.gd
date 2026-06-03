@@ -10,16 +10,18 @@ const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 signal return_to_menu_requested
 
 @onready var hud := $Root/Hud
-@onready var player_view := $Root/EncounterArea/EncounterMargin/Battlefield/PlayerView
+@onready var player_view := $Root/HandPanel/HandMargin/BottomRow/PlayerView
 @onready var monster_view := $Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea/MonsterView
-@onready var hand_view := $Root/HandPanel/HandMargin/HandView
+@onready var hand_view := $Root/HandPanel/HandMargin/BottomRow/HandView
 @onready var log_label: Label = $Root/LogLabel
+@onready var battle_end_dialog: AcceptDialog = $BattleEndDialog
 
 var state := GameStateScript.new()
 var save_slot: int = 1
 var pending_snapshot: Dictionary = {}
 var pending_encounter_id: StringName = &"training_test"
 var autosave_enabled: bool = false
+var battle_end_shown: bool = false
 
 func configure(slot: int, snapshot: Dictionary = {}, encounter_id: StringName = &"training_test") -> void:
 	save_slot = clampi(slot, 1, SaveManager.SLOT_COUNT)
@@ -34,6 +36,7 @@ func _ready() -> void:
 	hud.return_to_menu_requested.connect(_on_return_to_menu_requested)
 	hand_view.card_selected.connect(_on_card_selected)
 	monster_view.card_dropped_on_enemy.connect(_on_card_dropped_on_enemy)
+	battle_end_dialog.confirmed.connect(_on_battle_end_confirmed)
 
 	if pending_encounter_id == &"resume" and not pending_snapshot.is_empty():
 		state.apply_snapshot(pending_snapshot)
@@ -52,6 +55,8 @@ func _on_state_changed() -> void:
 	player_view.render(state)
 	monster_view.render(state)
 	hand_view.render(state.hand, state)
+	if state.has_won and not battle_end_shown:
+		_show_battle_end_dialog()
 	if autosave_enabled:
 		SaveManager.save_snapshot(save_slot, state.to_snapshot())
 
@@ -87,8 +92,17 @@ func _on_card_dropped_on_enemy(card_id: int, enemy_id: int) -> void:
 func _on_return_to_menu_requested() -> void:
 	return_to_menu_requested.emit()
 
+func _on_battle_end_confirmed() -> void:
+	return_to_menu_requested.emit()
+
 func _append_log(message: String) -> void:
 	log_label.text = message
+
+func _show_battle_end_dialog() -> void:
+	battle_end_shown = true
+	battle_end_dialog.title = "战斗结束"
+	battle_end_dialog.dialog_text = "%s\n副本已完成，返回主菜单。" % state.last_event_log
+	battle_end_dialog.popup_centered()
 
 func _build_placeholder_config() -> Resource:
 	var config := RunConfigScript.new()
