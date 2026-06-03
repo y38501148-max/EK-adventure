@@ -1,0 +1,76 @@
+[gd_scene load_steps=4 format=3 uid="uid://game_root_exploding_konjac"]
+
+[ext_resource type="Script" path="res://scripts/game/GameRoot.gd" id="1_game_root"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="2_hud"]
+[ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="3_hand_view"]
+
+[node name="GameRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_game_root")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.11, 0.13, 1)
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Hud" parent="Root" unique_name_in_owner=true instance=ExtResource("2_hud")]
+layout_mode = 2
+
+[node name="EncounterArea" type="PanelContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EncounterMargin" type="MarginContainer" parent="Root/EncounterArea"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="EncounterText" type="Label" parent="Root/EncounterArea/EncounterMargin"]
+layout_mode = 2
+text = "OI 与 XCPC 的遭遇区占位：敌人、意图、地图与事件会在下一步接入。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HandPanel" type="PanelContainer" parent="Root"]
+custom_minimum_size = Vector2(0, 210)
+layout_mode = 2
+
+[node name="HandMargin" type="MarginContainer" parent="Root/HandPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="HandView" type="HBoxContainer" parent="Root/HandPanel/HandMargin" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_constants/separation = 12
+script = ExtResource("3_hand_view")
+
+[node name="LogLabel" type="Label" parent="Root" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+text = "框架已启动。"
+horizontal_alignment = 1
+

@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://card_view_exploding_konjac"]
+
+[ext_resource type="Script" path="res://scripts/ui/CardView.gd" id="1_card_view"]
+
+[node name="CardView" type="PanelContainer"]
+custom_minimum_size = Vector2(170, 180)
+script = ExtResource("1_card_view")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Rows" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopRow" type="HBoxContainer" parent="Margin/Rows"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Rows/TopRow" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "卡牌"
+autowrap_mode = 3
+
+[node name="CostLabel" type="Label" parent="Margin/Rows/TopRow" unique_name_in_owner=true]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 2
+
+[node name="TypeLabel" type="Label" parent="Margin/Rows" unique_name_in_owner=true]
+layout_mode = 2
+text = "类型"
+
+[node name="DescriptionLabel" type="Label" parent="Margin/Rows" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_vertical = 3
+text = "效果描述"
+autowrap_mode = 3
+

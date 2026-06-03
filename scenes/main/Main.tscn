@@ -1,0 +1,76 @@
+[gd_scene load_steps=2 format=3 uid="uid://main_exploding_konjac"]
+
+[ext_resource type="Script" path="res://scripts/ui/Main.gd" id="1_main"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.09, 0.12, 1)
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 42
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 42
+
+[node name="MenuPanel" type="VBoxContainer" parent="Root" unique_name_in_owner=true]
+layout_mode = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Root/MenuPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "爆炸蒟蒻历险记"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Root/MenuPanel" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ExplodingKonjac"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Root/MenuPanel"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="Root/MenuPanel"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+text = "新旅程"
+
+[node name="QuitButton" type="Button" parent="Root/MenuPanel"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+text = "退出"
+
+[node name="GameMount" type="Control" parent="." unique_name_in_owner=true]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[connection signal="pressed" from="Root/MenuPanel/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Root/MenuPanel/QuitButton" to="." method="_on_quit_button_pressed"]
+
