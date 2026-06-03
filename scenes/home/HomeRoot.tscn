@@ -1,0 +1,131 @@
+[gd_scene load_steps=3 format=3 uid="uid://home_root_exploding_konjac"]
+
+[ext_resource type="Script" path="res://scripts/ui/HomeRoot.gd" id="1_home_root"]
+[ext_resource type="Texture2D" path="res://image.png" id="2_avatar"]
+
+[node name="HomeRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_home_root")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.09, 0.1, 0.12, 1)
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 44
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 44
+theme_override_constants/margin_bottom = 36
+
+[node name="Columns" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="InfoColumn" type="VBoxContainer" parent="Root/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="Avatar" type="TextureRect" parent="Root/Columns/InfoColumn"]
+custom_minimum_size = Vector2(176, 176)
+layout_mode = 2
+texture = ExtResource("2_avatar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SlotLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "档位 1"
+
+[node name="HeroLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "ExplodingKonjac"
+
+[node name="InfoSpacer" type="Control" parent="Root/Columns/InfoColumn"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="GoldLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "金钱：0"
+
+[node name="LevelLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "等级：1"
+
+[node name="HealthLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "生命：50/50"
+
+[node name="Fill" type="Control" parent="Root/Columns/InfoColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatusLabel" type="Label" parent="Root/Columns/InfoColumn" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "主页已载入。"
+
+[node name="ActionColumn" type="VBoxContainer" parent="Root/Columns"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="StoryButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "故事"
+
+[node name="TrainingButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "训练"
+
+[node name="SortieButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "出击"
+
+[node name="StudyButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "学习"
+
+[node name="RelicButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "遗物"
+
+[node name="BagButton" type="Button" parent="Root/Columns/ActionColumn"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+text = "背包"
+
+[connection signal="pressed" from="Root/Columns/ActionColumn/StoryButton" to="." method="_on_story_button_pressed"]
+[connection signal="pressed" from="Root/Columns/ActionColumn/TrainingButton" to="." method="_on_training_button_pressed"]
+[connection signal="pressed" from="Root/Columns/ActionColumn/SortieButton" to="." method="_on_sortie_button_pressed"]
+[connection signal="pressed" from="Root/Columns/ActionColumn/StudyButton" to="." method="_on_study_button_pressed"]
+[connection signal="pressed" from="Root/Columns/ActionColumn/RelicButton" to="." method="_on_relic_button_pressed"]
+[connection signal="pressed" from="Root/Columns/ActionColumn/BagButton" to="." method="_on_bag_button_pressed"]

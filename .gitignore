@@ -4,6 +4,8 @@ export/
 *.translation
 *.tmp
 *.log
+*.uid
+*.import
 .DS_Store
 cards-md/
 monsters-md/

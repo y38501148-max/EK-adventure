@@ -30,6 +30,8 @@ var player_energy: int = BASE_ENERGY_PER_TURN
 var max_energy: int = BASE_ENERGY_PER_TURN
 var base_attack: int = BASE_ATTACK
 var base_block: int = BASE_BLOCK
+var player_gold: int = 0
+var player_level: int = 1
 var hand_limit: int = HAND_LIMIT
 var draw_per_turn: int = DRAW_PER_TURN
 var is_cheating: bool = false
@@ -49,6 +51,9 @@ var enemy_actions: Array[Dictionary] = []
 var enemy_action_index: int = 0
 var enemy_description: String = ""
 var enemy_acted_this_turn: bool = false
+var encounter_id: StringName = &"default"
+var victory_gold_reward: int = 0
+var victory_reward_claimed: bool = false
 var last_event_log: String = ""
 var next_card_id: int = 1
 var draw_pile: Array = []
@@ -64,6 +69,8 @@ func setup(config: Resource) -> void:
 	player_energy = max_energy
 	base_attack = config.base_attack
 	base_block = config.base_block
+	player_gold = config.starting_gold
+	player_level = max(1, config.starting_level)
 	hand_limit = HAND_LIMIT
 	draw_per_turn = DRAW_PER_TURN
 	player_block = 0
@@ -82,6 +89,9 @@ func setup(config: Resource) -> void:
 	enemy_action_index = 0
 	enemy_description = config.enemy_description
 	enemy_acted_this_turn = false
+	encounter_id = config.encounter_id
+	victory_gold_reward = max(0, config.victory_gold_reward)
+	victory_reward_claimed = false
 	_prepare_enemy_action()
 	last_event_log = "战斗开始。"
 	rng.seed = seed
@@ -147,13 +157,19 @@ func draw_cards(amount: int) -> void:
 		card.zone = &"hand"
 		hand.append(card)
 
-func can_play_card(card_id: int) -> bool:
+func can_play_card(card_id: int, targets: Array = []) -> bool:
 	var card: Variant = get_hand_card(card_id)
-	return card != null and phase == Phase.MAIN and not _is_combat_over() and player_energy >= effective_card_cost(card)
+	return (
+		card != null
+		and phase == Phase.MAIN
+		and not _is_combat_over()
+		and player_energy >= effective_card_cost(card)
+		and _has_required_targets(card, targets)
+	)
 
-func play_card(card_id: int, targets: Array[int] = []) -> bool:
+func play_card(card_id: int, targets: Array = []) -> bool:
 	var card: Variant = get_hand_card(card_id)
-	if card == null or not can_play_card(card_id):
+	if card == null or not can_play_card(card_id, targets):
 		return false
 
 	player_energy -= effective_card_cost(card)
@@ -177,6 +193,16 @@ func get_hand_card(card_id: int) -> Variant:
 			return card
 	return null
 
+func card_requires_target(card_id: int) -> bool:
+	return _card_requires_target(get_hand_card(card_id))
+
+func claim_victory_reward() -> int:
+	if not has_won or victory_reward_claimed or victory_gold_reward <= 0:
+		return 0
+	victory_reward_claimed = true
+	player_gold += victory_gold_reward
+	return victory_gold_reward
+
 func to_snapshot() -> Dictionary:
 	return {
 		"seed": seed,
@@ -186,6 +212,8 @@ func to_snapshot() -> Dictionary:
 		"player_health": player_health,
 		"player_block": player_block,
 		"player_energy": player_energy,
+		"gold": player_gold,
+		"level": player_level,
 		"hand_limit": hand_limit,
 		"is_cheating": is_cheating,
 		"has_lost": has_lost,
@@ -200,6 +228,9 @@ func to_snapshot() -> Dictionary:
 		"enemy_actions": enemy_actions,
 		"enemy_action_index": enemy_action_index,
 		"enemy_description": enemy_description,
+		"encounter_id": str(encounter_id),
+		"victory_gold_reward": victory_gold_reward,
+		"victory_reward_claimed": victory_reward_claimed,
 		"next_card_id": next_card_id,
 		"last_event_log": last_event_log,
 		"draw_pile": _cards_to_snapshot(draw_pile),
@@ -216,6 +247,8 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	player_health = int(snapshot.get("player_health", player_health))
 	player_block = int(snapshot.get("player_block", player_block))
 	player_energy = int(snapshot.get("player_energy", player_energy))
+	player_gold = int(snapshot.get("gold", player_gold))
+	player_level = int(snapshot.get("level", player_level))
 	hand_limit = int(snapshot.get("hand_limit", hand_limit))
 	is_cheating = bool(snapshot.get("is_cheating", is_cheating))
 	has_lost = bool(snapshot.get("has_lost", has_lost))
@@ -231,6 +264,9 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	enemy_actions = _normalize_actions(snapshot.get("enemy_actions", enemy_actions))
 	enemy_action_index = int(snapshot.get("enemy_action_index", enemy_action_index))
 	enemy_description = str(snapshot.get("enemy_description", enemy_description))
+	encounter_id = StringName(str(snapshot.get("encounter_id", encounter_id)))
+	victory_gold_reward = int(snapshot.get("victory_gold_reward", victory_gold_reward))
+	victory_reward_claimed = bool(snapshot.get("victory_reward_claimed", victory_reward_claimed))
 	next_card_id = int(snapshot.get("next_card_id", next_card_id))
 	last_event_log = str(snapshot.get("last_event_log", last_event_log))
 	draw_pile = _cards_from_snapshot(snapshot.get("draw_pile", []), &"draw_pile")
@@ -330,7 +366,7 @@ func _normalize_actions(raw_actions: Variant) -> Array[Dictionary]:
 			normalized.append(action)
 	return normalized
 
-func _resolve_card(card: Variant, _targets: Array[int]) -> void:
+func _resolve_card(card: Variant, _targets: Array) -> void:
 	match card.definition.card_type:
 		CardDefinitionScript.CardType.ATTACK:
 			_attack_enemy(card)
@@ -435,6 +471,23 @@ func _card_has_tag(card: Variant, tag: StringName) -> bool:
 	if card == null or card.definition == null:
 		return false
 	return card.definition.tags.has(tag)
+
+func _card_requires_target(card: Variant) -> bool:
+	return (
+		card != null
+		and card.definition != null
+		and card.definition.card_type == CardDefinitionScript.CardType.ATTACK
+	)
+
+func _has_required_targets(card: Variant, targets: Array) -> bool:
+	if not _card_requires_target(card):
+		return true
+	if targets.is_empty():
+		return false
+	for target_id in targets:
+		if int(target_id) < 0:
+			return false
+	return true
 
 func _shuffle_draw_pile() -> void:
 	if draw_pile.size() < 2:

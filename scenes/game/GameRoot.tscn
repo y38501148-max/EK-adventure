@@ -62,7 +62,13 @@ custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MonsterView" parent="Root/EncounterArea/EncounterMargin/Battlefield" instance=ExtResource("4_monster_view")]
+[node name="EnemyArea" type="HBoxContainer" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="MonsterView" parent="Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea" instance=ExtResource("4_monster_view")]
 layout_mode = 2
 
 [node name="HandPanel" type="PanelContainer" parent="Root"]

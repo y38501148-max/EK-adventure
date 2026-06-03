@@ -27,9 +27,38 @@ func render(card: Variant, state: Variant = null) -> void:
 	description_label.text = card.definition.description
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if instance != null:
 			card_selected.emit(instance.runtime_id)
+
+func _get_drag_data(_at_position: Vector2) -> Variant:
+	if instance == null:
+		return null
+
+	set_drag_preview(_build_drag_preview())
+	return {
+		"kind": "card",
+		"card_id": instance.runtime_id
+	}
+
+func _build_drag_preview() -> Control:
+	var preview := PanelContainer.new()
+	preview.custom_minimum_size = Vector2(150, 64)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	preview.add_child(margin)
+
+	var label := Label.new()
+	label.text = instance.definition.title if instance != null and instance.definition != null else "卡牌"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	margin.add_child(label)
+	return preview
 
 func _type_text(card_type: int, algorithm_attribute: StringName) -> String:
 	var base_type := ""

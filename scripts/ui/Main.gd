@@ -1,6 +1,7 @@
 extends Control
 
 const GAME_ROOT_SCENE := preload("res://scenes/game/GameRoot.tscn")
+const HOME_ROOT_SCENE := preload("res://scenes/home/HomeRoot.tscn")
 
 @onready var menu_panel: VBoxContainer = $Root/MenuPanel
 @onready var slot_panel: VBoxContainer = $Root/SlotPanel
@@ -10,8 +11,11 @@ const GAME_ROOT_SCENE := preload("res://scenes/game/GameRoot.tscn")
 @onready var game_mount: Control = $GameMount
 @onready var subtitle_label: Label = $Root/MenuPanel/SubtitleLabel
 
+var home_root: Node
 var game_root: Node
 var slot_mode: StringName = &"new"
+var current_slot: int = 1
+var current_snapshot: Dictionary = {}
 
 func _ready() -> void:
 	Settings.apply_defaults()
@@ -80,11 +84,32 @@ func _start_game(slot: int, should_load: bool) -> void:
 
 	menu_panel.hide()
 	slot_panel.hide()
+	current_slot = slot
+	current_snapshot = snapshot
+	_show_home(slot, snapshot)
+
+func _show_home(slot: int, snapshot: Dictionary = {}) -> void:
 	if game_root != null:
 		game_root.queue_free()
+		game_root = null
+	if home_root != null:
+		home_root.queue_free()
+		home_root = null
+	home_root = HOME_ROOT_SCENE.instantiate()
+	if home_root.has_method("configure"):
+		home_root.configure(slot, snapshot)
+	game_mount.add_child(home_root)
+	home_root.connect("training_test_requested", _on_training_test_requested)
+
+func _on_training_test_requested() -> void:
+	if home_root != null:
+		home_root.hide()
+	if game_root != null:
+		game_root.queue_free()
+		game_root = null
 	game_root = GAME_ROOT_SCENE.instantiate()
 	if game_root.has_method("configure"):
-		game_root.configure(slot, snapshot)
+		game_root.configure(current_slot, current_snapshot, &"training_test")
 	game_mount.add_child(game_root)
 	game_root.connect("return_to_menu_requested", _on_return_to_menu_requested)
 
@@ -92,6 +117,12 @@ func _on_return_to_menu_requested() -> void:
 	if game_root != null:
 		game_root.queue_free()
 		game_root = null
-	menu_panel.show()
-	slot_panel.hide()
+	var envelope := SaveManager.load_snapshot(current_slot)
+	current_snapshot = envelope.get("state", current_snapshot)
+	if home_root != null:
+		if home_root.has_method("update_snapshot"):
+			home_root.update_snapshot(current_snapshot)
+		home_root.show()
+	else:
+		_show_home(current_slot, current_snapshot)
 	_refresh_slot_buttons()

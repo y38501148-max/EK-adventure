@@ -20,6 +20,7 @@ func _run() -> void:
 	_expect(enumerate_card.algorithm_attribute == &"模拟", "枚举算法属性应为模拟")
 	_expect(enumerate_card.damage_percent == 100, "枚举应造成 100% 伤害")
 	_test_monster_loader()
+	_test_victory_reward(enumerate_card)
 
 	var state: Variant = _build_state(enumerate_card)
 	state.begin_turn()
@@ -27,12 +28,15 @@ func _run() -> void:
 	_expect(state.max_energy == 4 and state.player_energy == 4, "每回合费用应为 4")
 	_expect(state.hand.size() == 5, "测试牌组应抽到 5 张枚举")
 
-	state.play_card(state.hand[0].runtime_id)
+	var first_attack_id: int = state.hand[0].runtime_id
+	_expect(not state.can_play_card(first_attack_id), "攻击牌没有目标时不应可打出")
+	_expect(not state.play_card(first_attack_id), "攻击牌没有目标时不应被打出")
+	state.play_card(first_attack_id, [0])
 	_expect(state.enemy_health == 90, "模拟弱点应让 15 点基础伤害翻倍为 30")
 	_expect(state.enemy_action_countdown == 2, "每出一张牌，怪物倒计时 -1")
 
-	state.play_card(state.hand[0].runtime_id)
-	state.play_card(state.hand[0].runtime_id)
+	state.play_card(state.hand[0].runtime_id, [0])
+	state.play_card(state.hand[0].runtime_id, [0])
 	_expect(state.enemy_health == 30, "三张枚举后怪物应剩 30 血")
 	_expect(state.enemy_acted_this_turn, "倒计时归 0 时怪物应立刻行动")
 	_expect(state.player_health == 38, "怪物行动应造成 12 点伤害")
@@ -46,7 +50,7 @@ func _run() -> void:
 	cheat_state.begin_turn()
 	cheat_state.player_health = 1
 	cheat_state.enemy_action_countdown = 1
-	cheat_state.play_card(cheat_state.hand[0].runtime_id)
+	cheat_state.play_card(cheat_state.hand[0].runtime_id, [0])
 	_expect(cheat_state.is_cheating, "生命归 0 应进入骗分状态")
 	_expect(not cheat_state.has_lost, "第一次归 0 不应立刻失败")
 	_expect(cheat_state.effective_card_cost(cheat_state.hand[0]) == 2, "骗分状态下所有卡费用 +1")
@@ -133,6 +137,34 @@ func _test_monster_loader() -> void:
 		_expect(state.enemy_action_name == "WA", "第二个意图应为 WA")
 		_expect(state.enemy_action_countdown == 7, "WA 倒计时应为 7")
 		_expect(state.enemy_attack == 6, "WA 伤害应为基础攻击 3 的 200%")
+
+func _test_victory_reward(card: Resource) -> void:
+	var config: Resource = RunConfigScript.new()
+	config.seed = 2
+	config.starting_health = 50
+	config.starting_energy = 4
+	config.base_attack = 15
+	config.base_block = 10
+	config.starting_gold = 0
+	config.starting_level = 1
+	config.encounter_id = &"training_test"
+	config.victory_gold_reward = 100
+	config.enemy_name = "A+B Problem"
+	config.enemy_health = 30
+	config.enemy_algorithm_attribute = &"模拟"
+	config.enemy_action_countdown = 3
+	config.enemy_attack = 3
+	var deck: Array[Resource] = [card]
+	config.starting_deck = deck
+
+	var state: Variant = GameStateScript.new()
+	state.setup(config)
+	state.begin_turn()
+	state.play_card(state.hand[0].runtime_id, [0])
+	_expect(state.has_won, "训练 Test 击败 A+B Problem 后应胜利")
+	_expect(state.claim_victory_reward() == 100, "训练 Test 胜利后应获得 100 金钱")
+	_expect(state.player_gold == 100, "金钱应累计到角色状态")
+	_expect(state.claim_victory_reward() == 0, "胜利奖励不应重复领取")
 
 func _load_enumerate_card() -> Resource:
 	for card in CardMarkdownLoaderScript.load_all_cards():

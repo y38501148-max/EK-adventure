@@ -11,18 +11,20 @@ signal return_to_menu_requested
 
 @onready var hud := $Root/Hud
 @onready var player_view := $Root/EncounterArea/EncounterMargin/Battlefield/PlayerView
-@onready var monster_view := $Root/EncounterArea/EncounterMargin/Battlefield/MonsterView
+@onready var monster_view := $Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea/MonsterView
 @onready var hand_view := $Root/HandPanel/HandMargin/HandView
 @onready var log_label: Label = $Root/LogLabel
 
 var state := GameStateScript.new()
 var save_slot: int = 1
 var pending_snapshot: Dictionary = {}
+var pending_encounter_id: StringName = &"training_test"
 var autosave_enabled: bool = false
 
-func configure(slot: int, snapshot: Dictionary = {}) -> void:
+func configure(slot: int, snapshot: Dictionary = {}, encounter_id: StringName = &"training_test") -> void:
 	save_slot = clampi(slot, 1, SaveManager.SLOT_COUNT)
 	pending_snapshot = snapshot
+	pending_encounter_id = encounter_id
 
 func _ready() -> void:
 	state.state_changed.connect(_on_state_changed)
@@ -31,16 +33,21 @@ func _ready() -> void:
 	hud.end_turn_requested.connect(_on_end_turn_requested)
 	hud.return_to_menu_requested.connect(_on_return_to_menu_requested)
 	hand_view.card_selected.connect(_on_card_selected)
+	monster_view.card_dropped_on_enemy.connect(_on_card_dropped_on_enemy)
 
-	state.setup(_build_placeholder_config())
-	if pending_snapshot.is_empty():
-		state.begin_turn()
-	else:
+	if pending_encounter_id == &"resume" and not pending_snapshot.is_empty():
 		state.apply_snapshot(pending_snapshot)
+	else:
+		state.setup(_build_placeholder_config())
+		_apply_profile_from_snapshot(pending_snapshot)
+		state.begin_turn()
 	autosave_enabled = true
 	_on_state_changed()
 
 func _on_state_changed() -> void:
+	var reward := state.claim_victory_reward()
+	if reward > 0:
+		state.last_event_log += " 获得 %d 金钱。" % reward
 	hud.render(state)
 	player_view.render(state)
 	monster_view.render(state)
@@ -63,10 +70,19 @@ func _on_end_turn_requested() -> void:
 		state.begin_turn()
 
 func _on_card_selected(card_id: int) -> void:
+	if state.card_requires_target(card_id):
+		_append_log("攻击牌需要拖动到敌人图片上释放。")
+		return
 	if state.play_card(card_id):
 		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能打出卡牌 #%d。" % card_id)
+
+func _on_card_dropped_on_enemy(card_id: int, enemy_id: int) -> void:
+	if state.play_card(card_id, [enemy_id]):
+		_append_log(state.last_event_log)
+	else:
+		_append_log("现在还不能对敌人 #%d 打出卡牌 #%d。" % [enemy_id, card_id])
 
 func _on_return_to_menu_requested() -> void:
 	return_to_menu_requested.emit()
@@ -82,6 +98,10 @@ func _build_placeholder_config() -> Resource:
 	config.starting_energy = 4
 	config.base_attack = 15
 	config.base_block = 10
+	config.starting_gold = int(pending_snapshot.get("gold", 0))
+	config.starting_level = int(pending_snapshot.get("level", 1))
+	config.encounter_id = pending_encounter_id
+	config.victory_gold_reward = 100 if pending_encounter_id == &"training_test" else 0
 	var monster := MonsterMarkdownLoaderScript.load_first_monster()
 	config.enemy_name = monster.title
 	config.enemy_health = monster.max_health
@@ -111,3 +131,9 @@ func _make_fallback_card() -> Resource:
 	card.damage_percent = 100
 	card.description = "对单个敌人造成100%伤害"
 	return card
+
+func _apply_profile_from_snapshot(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	state.player_gold = int(snapshot.get("gold", state.player_gold))
+	state.player_level = int(snapshot.get("level", state.player_level))

@@ -49,7 +49,11 @@ func get_slot_summary(slot: int) -> Dictionary:
 	return {
 		"slot": slot,
 		"has_save": true,
-		"title": "档位 %d  回合 %d" % [slot, int(state.get("turn", 0))],
+		"title": "档位 %d  等级 %d  金钱 %d" % [
+			slot,
+			int(state.get("level", 1)),
+			int(state.get("gold", 0))
+		],
 		"detail": "%s  生命 %d/%d  %s" % [
 			str(envelope.get("saved_at_text", "")),
 			int(state.get("player_health", 0)),
