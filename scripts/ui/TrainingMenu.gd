@@ -18,18 +18,18 @@ const TRAINING_DUNGEONS := [
 	}
 ]
 
-@onready var slot_label: Label = $Root/Rows/TopBar/TopMargin/TopBarRows/PlayerSummary/SlotLabel
-@onready var gold_label: Label = $Root/Rows/TopBar/TopMargin/TopBarRows/PlayerSummary/GoldLabel
-@onready var level_label: Label = $Root/Rows/TopBar/TopMargin/TopBarRows/PlayerSummary/LevelLabel
-@onready var dungeon_list: VBoxContainer = $Root/Rows/Content/ListPanel/ListMargin/ListRows/DungeonList
-@onready var detail_title_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/DetailTitleLabel
-@onready var detail_subtitle_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/DetailSubtitleLabel
-@onready var requirement_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/RequirementLabel
-@onready var reward_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/RewardLabel
-@onready var enemy_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/EnemyLabel
-@onready var description_label: Label = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/DescriptionLabel
-@onready var enter_button: Button = $Root/Rows/Content/DetailPanel/DetailMargin/DetailRows/EnterButton
-@onready var status_label: Label = $Root/Rows/StatusLabel
+@onready var slot_label: Label = $Overlay/BottomSummary/SlotLabel
+@onready var gold_label: Label = $Overlay/BottomSummary/GoldLabel
+@onready var level_label: Label = $Overlay/BottomSummary/LevelLabel
+@onready var dungeon_list: Control = $Overlay/DungeonList
+@onready var detail_title_label: Label = $Overlay/Detail/DetailTitleLabel
+@onready var detail_subtitle_label: Label = $Overlay/Detail/DetailSubtitleLabel
+@onready var requirement_label: Label = $Overlay/Detail/RequirementLabel
+@onready var reward_label: Label = $Overlay/Detail/RewardLabel
+@onready var enemy_label: Label = $Overlay/Detail/EnemyLabel
+@onready var description_label: Label = $Overlay/Detail/DescriptionLabel
+@onready var enter_button: Button = $Overlay/Detail/EnterButton
+@onready var status_label: Label = $Overlay/StatusLabel
 
 var save_slot: int = 1
 var snapshot: Dictionary = {}
@@ -54,14 +54,15 @@ func _build_dungeon_list() -> void:
 	for index in range(TRAINING_DUNGEONS.size()):
 		var dungeon: Dictionary = TRAINING_DUNGEONS[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(300, 72)
-		button.text = "%s\n推荐等级 %d  消耗金币 %d" % [
-			str(dungeon["name"]),
-			int(dungeon["recommended_level"]),
-			int(dungeon["entry_gold"])
-		]
+		button.position = Vector2(0.0, float(index * 64))
+		button.size = Vector2(665.0, 58.0)
+		button.custom_minimum_size = button.size
+		button.text = _format_dungeon_button(dungeon, false)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size", 17)
+		_apply_transparent_button_style(button)
 		button.pressed.connect(_on_dungeon_button_pressed.bind(index))
 		dungeon_list.add_child(button)
 		dungeon_buttons.append(button)
@@ -76,7 +77,10 @@ func _select_dungeon(index: int) -> void:
 	selected_index = index
 	var dungeon: Dictionary = TRAINING_DUNGEONS[selected_index]
 	for button_index in range(dungeon_buttons.size()):
-		dungeon_buttons[button_index].button_pressed = button_index == selected_index
+		var button := dungeon_buttons[button_index]
+		var is_selected := button_index == selected_index
+		button.button_pressed = is_selected
+		button.text = _format_dungeon_button(TRAINING_DUNGEONS[button_index], is_selected)
 
 	detail_title_label.text = str(dungeon["name"])
 	detail_subtitle_label.text = str(dungeon["subtitle"])
@@ -123,3 +127,19 @@ func _on_enter_button_pressed() -> void:
 
 func _on_back_button_pressed() -> void:
 	back_requested.emit()
+
+func _format_dungeon_button(dungeon: Dictionary, is_selected: bool) -> String:
+	var prefix := "> " if is_selected else "  "
+	return "%s%s\n  推荐等级 %d    消耗金币 %d" % [
+		prefix,
+		str(dungeon["name"]),
+		int(dungeon["recommended_level"]),
+		int(dungeon["entry_gold"])
+	]
+
+func _apply_transparent_button_style(button: Button) -> void:
+	var empty := StyleBoxEmpty.new()
+	button.add_theme_stylebox_override("normal", empty)
+	button.add_theme_stylebox_override("hover", empty)
+	button.add_theme_stylebox_override("pressed", empty)
+	button.add_theme_stylebox_override("focus", empty)
