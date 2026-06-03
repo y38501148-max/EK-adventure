@@ -34,6 +34,8 @@ func _run() -> void:
 	_expect(state.enemy_health == 30, "三张枚举后怪物应剩 30 血")
 	_expect(state.enemy_acted_this_turn, "倒计时归 0 时怪物应立刻行动")
 	_expect(state.player_health == 38, "怪物行动应造成 12 点伤害")
+	state.end_turn()
+	_expect(state.player_health == 38, "怪物已在出牌阶段行动时，回合结束不应再次行动")
 
 	_test_card_zone_rules()
 	_test_hand_limit_and_shuffle()
