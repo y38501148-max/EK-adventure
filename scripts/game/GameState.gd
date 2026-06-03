@@ -196,12 +196,49 @@ func to_snapshot() -> Dictionary:
 		"enemy_action_countdown": enemy_action_countdown,
 		"enemy_action_name": enemy_action_name,
 		"enemy_attack": enemy_attack,
+		"enemy_base_attack": enemy_base_attack,
+		"enemy_actions": enemy_actions,
+		"enemy_action_index": enemy_action_index,
 		"enemy_description": enemy_description,
-		"draw_pile_count": draw_pile.size(),
-		"hand_count": hand.size(),
-		"discard_pile_count": discard_pile.size(),
-		"exhaust_pile_count": exhaust_pile.size()
+		"next_card_id": next_card_id,
+		"last_event_log": last_event_log,
+		"draw_pile": _cards_to_snapshot(draw_pile),
+		"hand": _cards_to_snapshot(hand),
+		"discard_pile": _cards_to_snapshot(discard_pile),
+		"exhaust_pile": _cards_to_snapshot(exhaust_pile)
 	}
+
+func apply_snapshot(snapshot: Dictionary) -> void:
+	seed = int(snapshot.get("seed", seed))
+	turn = int(snapshot.get("turn", turn))
+	phase = int(snapshot.get("phase", phase))
+	player_max_health = int(snapshot.get("player_max_health", player_max_health))
+	player_health = int(snapshot.get("player_health", player_health))
+	player_block = int(snapshot.get("player_block", player_block))
+	player_energy = int(snapshot.get("player_energy", player_energy))
+	hand_limit = int(snapshot.get("hand_limit", hand_limit))
+	is_cheating = bool(snapshot.get("is_cheating", is_cheating))
+	has_lost = bool(snapshot.get("has_lost", has_lost))
+	has_won = bool(snapshot.get("has_won", has_won))
+	enemy_name = str(snapshot.get("enemy_name", enemy_name))
+	enemy_max_health = int(snapshot.get("enemy_max_health", enemy_max_health))
+	enemy_health = int(snapshot.get("enemy_health", enemy_health))
+	enemy_algorithm_attribute = StringName(str(snapshot.get("enemy_algorithm_attribute", enemy_algorithm_attribute)))
+	enemy_action_countdown = int(snapshot.get("enemy_action_countdown", enemy_action_countdown))
+	enemy_action_name = str(snapshot.get("enemy_action_name", enemy_action_name))
+	enemy_attack = int(snapshot.get("enemy_attack", enemy_attack))
+	enemy_base_attack = int(snapshot.get("enemy_base_attack", enemy_base_attack))
+	enemy_actions = _normalize_actions(snapshot.get("enemy_actions", enemy_actions))
+	enemy_action_index = int(snapshot.get("enemy_action_index", enemy_action_index))
+	enemy_description = str(snapshot.get("enemy_description", enemy_description))
+	next_card_id = int(snapshot.get("next_card_id", next_card_id))
+	last_event_log = str(snapshot.get("last_event_log", last_event_log))
+	draw_pile = _cards_from_snapshot(snapshot.get("draw_pile", []), &"draw_pile")
+	hand = _cards_from_snapshot(snapshot.get("hand", []), &"hand")
+	discard_pile = _cards_from_snapshot(snapshot.get("discard_pile", []), &"discard_pile")
+	exhaust_pile = _cards_from_snapshot(snapshot.get("exhaust_pile", []), &"exhaust_pile")
+	_set_phase(phase)
+	state_changed.emit()
 
 func _move_played_card(card: Variant) -> void:
 	hand.erase(card)
@@ -211,6 +248,87 @@ func _move_played_card(card: Variant) -> void:
 	else:
 		card.zone = &"discard_pile"
 		discard_pile.append(card)
+
+func _cards_to_snapshot(cards: Array) -> Array[Dictionary]:
+	var snapshots: Array[Dictionary] = []
+	for card in cards:
+		snapshots.append(_card_to_snapshot(card))
+	return snapshots
+
+func _card_to_snapshot(card: Variant) -> Dictionary:
+	var definition: Resource = card.definition
+	return {
+		"runtime_id": card.runtime_id,
+		"owner_id": str(card.owner_id),
+		"zone": str(card.zone),
+		"temporary_cost_delta": card.temporary_cost_delta,
+		"selected": card.selected,
+		"definition": {
+			"id": str(definition.id),
+			"title": definition.title,
+			"card_type": definition.card_type,
+			"algorithm_attribute": str(definition.algorithm_attribute),
+			"cost": definition.cost,
+			"base_value": definition.base_value,
+			"damage_percent": definition.damage_percent,
+			"description": definition.description,
+			"tags": _tags_to_snapshot(definition.tags)
+		}
+	}
+
+func _cards_from_snapshot(cards_snapshot: Variant, fallback_zone: StringName) -> Array:
+	var cards: Array = []
+	if not cards_snapshot is Array:
+		return cards
+	for card_snapshot in cards_snapshot:
+		if not card_snapshot is Dictionary:
+			continue
+		var definition := _definition_from_snapshot(card_snapshot.get("definition", {}))
+		var card := CardInstanceStateScript.new(int(card_snapshot.get("runtime_id", 0)), definition)
+		card.owner_id = StringName(str(card_snapshot.get("owner_id", "player")))
+		card.zone = StringName(str(card_snapshot.get("zone", fallback_zone)))
+		card.temporary_cost_delta = int(card_snapshot.get("temporary_cost_delta", 0))
+		card.selected = bool(card_snapshot.get("selected", false))
+		cards.append(card)
+	return cards
+
+func _definition_from_snapshot(definition_snapshot: Variant) -> Resource:
+	var definition := CardDefinitionScript.new()
+	if not definition_snapshot is Dictionary:
+		return definition
+	definition.id = StringName(str(definition_snapshot.get("id", "")))
+	definition.title = str(definition_snapshot.get("title", "未命名"))
+	definition.card_type = int(definition_snapshot.get("card_type", CardDefinitionScript.CardType.SKILL))
+	definition.algorithm_attribute = StringName(str(definition_snapshot.get("algorithm_attribute", "")))
+	definition.cost = int(definition_snapshot.get("cost", 1))
+	definition.base_value = int(definition_snapshot.get("base_value", 0))
+	definition.damage_percent = int(definition_snapshot.get("damage_percent", 100))
+	definition.description = str(definition_snapshot.get("description", ""))
+	definition.tags = _tags_from_snapshot(definition_snapshot.get("tags", []))
+	return definition
+
+func _tags_to_snapshot(tags: Array[StringName]) -> Array[String]:
+	var values: Array[String] = []
+	for tag in tags:
+		values.append(str(tag))
+	return values
+
+func _tags_from_snapshot(raw_tags: Variant) -> Array[StringName]:
+	var tags: Array[StringName] = []
+	if not raw_tags is Array:
+		return tags
+	for tag in raw_tags:
+		tags.append(StringName(str(tag)))
+	return tags
+
+func _normalize_actions(raw_actions: Variant) -> Array[Dictionary]:
+	var normalized: Array[Dictionary] = []
+	if not raw_actions is Array:
+		return normalized
+	for action in raw_actions:
+		if action is Dictionary:
+			normalized.append(action)
+	return normalized
 
 func _resolve_card(card: Variant, _targets: Array[int]) -> void:
 	match card.definition.card_type:

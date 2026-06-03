@@ -10,14 +10,22 @@ const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 signal return_to_menu_requested
 
 @onready var hud := $Root/Hud
-@onready var monster_view := $Root/EncounterArea/EncounterMargin/MonsterView
+@onready var player_view := $Root/EncounterArea/EncounterMargin/Battlefield/PlayerView
+@onready var monster_view := $Root/EncounterArea/EncounterMargin/Battlefield/MonsterView
 @onready var hand_view := $Root/HandPanel/HandMargin/HandView
 @onready var log_label: Label = $Root/LogLabel
 
 var state := GameStateScript.new()
+var save_slot: int = 1
+var pending_snapshot: Dictionary = {}
+var autosave_enabled: bool = false
+
+func configure(slot: int, snapshot: Dictionary = {}) -> void:
+	save_slot = clampi(slot, 1, SaveManager.SLOT_COUNT)
+	pending_snapshot = snapshot
 
 func _ready() -> void:
-	state.state_changed.connect(_render)
+	state.state_changed.connect(_on_state_changed)
 	state.phase_changed.connect(_on_phase_changed)
 	hud.draw_requested.connect(_on_draw_requested)
 	hud.end_turn_requested.connect(_on_end_turn_requested)
@@ -25,12 +33,20 @@ func _ready() -> void:
 	hand_view.card_selected.connect(_on_card_selected)
 
 	state.setup(_build_placeholder_config())
-	state.begin_turn()
+	if pending_snapshot.is_empty():
+		state.begin_turn()
+	else:
+		state.apply_snapshot(pending_snapshot)
+	autosave_enabled = true
+	_on_state_changed()
 
-func _render() -> void:
+func _on_state_changed() -> void:
 	hud.render(state)
+	player_view.render(state)
 	monster_view.render(state)
 	hand_view.render(state.hand, state)
+	if autosave_enabled:
+		SaveManager.save_snapshot(save_slot, state.to_snapshot())
 
 func _on_phase_changed(_phase: int) -> void:
 	pass
@@ -38,7 +54,7 @@ func _on_phase_changed(_phase: int) -> void:
 func _on_draw_requested() -> void:
 	state.draw_cards(1)
 	_append_log("调试抽牌：补 1 张占位卡。")
-	_render()
+	_on_state_changed()
 
 func _on_end_turn_requested() -> void:
 	state.end_turn()
@@ -51,7 +67,6 @@ func _on_card_selected(card_id: int) -> void:
 		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能打出卡牌 #%d。" % card_id)
-	_render()
 
 func _on_return_to_menu_requested() -> void:
 	return_to_menu_requested.emit()

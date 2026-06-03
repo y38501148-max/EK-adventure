@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://game_root_exploding_konjac"]
+[gd_scene load_steps=6 format=3 uid="uid://game_root_exploding_konjac"]
 
 [ext_resource type="Script" path="res://scripts/game/GameRoot.gd" id="1_game_root"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="2_hud"]
 [ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="3_hand_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MonsterView.tscn" id="4_monster_view"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PlayerView.tscn" id="5_player_view"]
 
 [node name="GameRoot" type="Control"]
 layout_mode = 3
@@ -46,7 +47,22 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 20
 
-[node name="MonsterView" parent="Root/EncounterArea/EncounterMargin" instance=ExtResource("4_monster_view")]
+[node name="Battlefield" type="HBoxContainer" parent="Root/EncounterArea/EncounterMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 64
+alignment = 1
+
+[node name="PlayerView" parent="Root/EncounterArea/EncounterMargin/Battlefield" instance=ExtResource("5_player_view")]
+layout_mode = 2
+
+[node name="FieldSpacer" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MonsterView" parent="Root/EncounterArea/EncounterMargin/Battlefield" instance=ExtResource("4_monster_view")]
 layout_mode = 2
 
 [node name="HandPanel" type="PanelContainer" parent="Root"]

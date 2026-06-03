@@ -55,12 +55,45 @@ layout_mode = 2
 [node name="StartButton" type="Button" parent="Root/MenuPanel"]
 custom_minimum_size = Vector2(260, 48)
 layout_mode = 2
-text = "新旅程"
+text = "新旅途"
+
+[node name="LoadButton" type="Button" parent="Root/MenuPanel"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+text = "读档"
 
 [node name="QuitButton" type="Button" parent="Root/MenuPanel"]
 custom_minimum_size = Vector2(260, 48)
 layout_mode = 2
 text = "退出"
+
+[node name="SlotPanel" type="VBoxContainer" parent="Root"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="SlotTitleLabel" type="Label" parent="Root/SlotPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "选择档位"
+horizontal_alignment = 1
+
+[node name="SlotButtons" type="VBoxContainer" parent="Root/SlotPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="SlotStatusLabel" type="Label" parent="Root/SlotPanel"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="Root/SlotPanel"]
+custom_minimum_size = Vector2(220, 42)
+layout_mode = 2
+text = "返回"
 
 [node name="GameMount" type="Control" parent="." unique_name_in_owner=true]
 layout_mode = 1
@@ -72,5 +105,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [connection signal="pressed" from="Root/MenuPanel/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="Root/MenuPanel/LoadButton" to="." method="_on_load_button_pressed"]
 [connection signal="pressed" from="Root/MenuPanel/QuitButton" to="." method="_on_quit_button_pressed"]
-
+[connection signal="pressed" from="Root/SlotPanel/BackButton" to="." method="_on_back_button_pressed"]

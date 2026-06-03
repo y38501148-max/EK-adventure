@@ -5,4 +5,7 @@ export/
 *.tmp
 *.log
 .DS_Store
-
+cards-md/
+monsters-md/
+example.png
+example1.png
