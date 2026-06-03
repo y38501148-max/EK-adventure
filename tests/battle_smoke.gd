@@ -3,6 +3,7 @@ extends SceneTree
 const CardDefinitionScript := preload("res://scripts/data/CardDefinition.gd")
 const CardMarkdownLoaderScript := preload("res://scripts/data/CardMarkdownLoader.gd")
 const GameStateScript := preload("res://scripts/game/GameState.gd")
+const MonsterMarkdownLoaderScript := preload("res://scripts/data/MonsterMarkdownLoader.gd")
 const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 
 var _failed := false
@@ -18,6 +19,7 @@ func _run() -> void:
 	_expect(enumerate_card.card_type == CardDefinitionScript.CardType.ATTACK, "枚举应为攻击牌")
 	_expect(enumerate_card.algorithm_attribute == &"模拟", "枚举算法属性应为模拟")
 	_expect(enumerate_card.damage_percent == 100, "枚举应造成 100% 伤害")
+	_test_monster_loader()
 
 	var state: Variant = _build_state(enumerate_card)
 	state.begin_turn()
@@ -91,6 +93,46 @@ func _test_hand_limit_and_shuffle() -> void:
 	shuffle_state.draw_cards(1)
 	_expect(shuffle_state.discard_pile.is_empty(), "抽牌区 <=3 时应将弃牌堆洗回抽牌区")
 	_expect(shuffle_state.hand.size() == 5, "洗回后应能继续抽牌")
+
+func _test_monster_loader() -> void:
+	var monster: Resource = MonsterMarkdownLoaderScript.load_first_monster()
+	_expect(monster.title != "", "第一只怪物应有名称")
+	_expect(monster.max_health > 0, "第一只怪物应有正数血量")
+	_expect(monster.algorithm_attribute != &"", "第一只怪物应有算法属性")
+
+	if monster.title == "A+B Problem":
+		_expect(monster.max_health == 45, "A+B Problem 血量应为 45")
+		_expect(monster.attack == 3, "A+B Problem 基础攻击应为 3")
+		_expect(monster.actions.size() == 2, "A+B Problem 应有两种攻击")
+		_expect(monster.actions[0].get("name") == "普通攻击", "第一种攻击应为普通攻击")
+		_expect(monster.actions[0].get("countdown") == 5, "普通攻击行动值应为 5")
+		_expect(monster.actions[0].get("damage_percent") == 100, "普通攻击应造成 100% 伤害")
+		_expect(monster.actions[1].get("name") == "WA", "第二种攻击应为 WA")
+		_expect(monster.actions[1].get("countdown") == 7, "WA 行动值应为 7")
+		_expect(monster.actions[1].get("damage_percent") == 200, "WA 应造成 200% 伤害")
+
+		var config: Resource = RunConfigScript.new()
+		var deck: Array[Resource] = [_make_test_card("轮换测试", CardDefinitionScript.CardType.SKILL, [])]
+		config.starting_deck = deck
+		config.enemy_name = monster.title
+		config.enemy_health = monster.max_health
+		config.enemy_algorithm_attribute = monster.algorithm_attribute
+		config.enemy_action_countdown = monster.action_countdown
+		config.enemy_attack = monster.attack
+		config.enemy_actions = monster.actions
+		config.enemy_description = monster.description
+
+		var state: Variant = GameStateScript.new()
+		state.setup(config)
+		state.begin_turn()
+		_expect(state.enemy_action_name == "普通攻击", "首个意图应为普通攻击")
+		_expect(state.enemy_action_countdown == 5, "普通攻击倒计时应为 5")
+		_expect(state.enemy_attack == 3, "普通攻击伤害应为 3")
+		state.end_turn()
+		state.begin_turn()
+		_expect(state.enemy_action_name == "WA", "第二个意图应为 WA")
+		_expect(state.enemy_action_countdown == 7, "WA 倒计时应为 7")
+		_expect(state.enemy_attack == 6, "WA 伤害应为基础攻击 3 的 200%")
 
 func _load_enumerate_card() -> Resource:
 	for card in CardMarkdownLoaderScript.load_all_cards():

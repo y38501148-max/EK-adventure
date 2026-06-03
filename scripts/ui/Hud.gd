@@ -25,11 +25,12 @@ func render(state: Variant) -> void:
 		state.max_energy,
 		cheat_text
 	]
-	enemy_label.text = "%s  生命 %d/%d  算法属性 %s  行动倒计时 %d  本回合%s行动" % [
+	enemy_label.text = "%s  生命 %d/%d  算法属性 %s  %s倒计时 %d  本回合%s行动" % [
 		state.enemy_name,
 		state.enemy_health,
 		state.enemy_max_health,
 		state.enemy_algorithm_attribute,
+		state.enemy_action_name,
 		state.enemy_action_countdown,
 		"已" if state.enemy_acted_this_turn else "未"
 	]

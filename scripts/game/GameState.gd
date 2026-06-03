@@ -41,7 +41,13 @@ var enemy_health: int = 120
 var enemy_algorithm_attribute: StringName = &"模拟"
 var enemy_base_action_countdown: int = 3
 var enemy_action_countdown: int = 3
+var enemy_base_attack: int = 12
 var enemy_attack: int = 12
+var enemy_action_name: String = "普通攻击"
+var enemy_action_damage_percent: int = 100
+var enemy_actions: Array[Dictionary] = []
+var enemy_action_index: int = 0
+var enemy_description: String = ""
 var enemy_acted_this_turn: bool = false
 var last_event_log: String = ""
 var next_card_id: int = 1
@@ -70,8 +76,13 @@ func setup(config: Resource) -> void:
 	enemy_algorithm_attribute = config.enemy_algorithm_attribute
 	enemy_base_action_countdown = max(1, config.enemy_action_countdown)
 	enemy_action_countdown = enemy_base_action_countdown
-	enemy_attack = config.enemy_attack
+	enemy_base_attack = config.enemy_attack
+	enemy_attack = enemy_base_attack
+	enemy_actions = config.enemy_actions.duplicate(true)
+	enemy_action_index = 0
+	enemy_description = config.enemy_description
 	enemy_acted_this_turn = false
+	_prepare_enemy_action()
 	last_event_log = "战斗开始。"
 	rng.seed = seed
 	turn = 0
@@ -97,7 +108,7 @@ func begin_turn() -> void:
 	player_energy = max_energy
 	player_block = 0
 	enemy_acted_this_turn = false
-	enemy_action_countdown = enemy_base_action_countdown
+	_prepare_enemy_action()
 	_set_phase(Phase.DRAW)
 	draw_cards(draw_per_turn)
 	_set_phase(Phase.MAIN)
@@ -183,6 +194,9 @@ func to_snapshot() -> Dictionary:
 		"enemy_health": enemy_health,
 		"enemy_algorithm_attribute": enemy_algorithm_attribute,
 		"enemy_action_countdown": enemy_action_countdown,
+		"enemy_action_name": enemy_action_name,
+		"enemy_attack": enemy_attack,
+		"enemy_description": enemy_description,
 		"draw_pile_count": draw_pile.size(),
 		"hand_count": hand.size(),
 		"discard_pile_count": discard_pile.size(),
@@ -247,10 +261,11 @@ func _perform_enemy_action() -> void:
 	enemy_action_countdown = 0
 	if enemy_attack <= 0:
 		last_event_log += " %s 本回合没有造成伤害。" % enemy_name
+		_advance_enemy_action()
 		return
 	if is_cheating:
 		has_lost = true
-		last_event_log += " %s 再次攻击，骗分失败。" % enemy_name
+		last_event_log += " %s 使用%s再次攻击，骗分失败。" % [enemy_name, enemy_action_name]
 		_set_phase(Phase.GAME_OVER)
 		return
 
@@ -260,12 +275,34 @@ func _perform_enemy_action() -> void:
 	player_health = max(0, player_health - damage)
 	if player_health == 0:
 		is_cheating = true
-		last_event_log += " %s 造成 %d 点伤害，进入骗分状态。" % [enemy_name, damage]
+		last_event_log += " %s 使用%s造成 %d 点伤害，进入骗分状态。" % [enemy_name, enemy_action_name, damage]
 	else:
-		last_event_log += " %s 造成 %d 点伤害。" % [enemy_name, damage]
+		last_event_log += " %s 使用%s造成 %d 点伤害。" % [enemy_name, enemy_action_name, damage]
+	_advance_enemy_action()
 
 func _is_combat_over() -> bool:
 	return has_lost or has_won
+
+func _prepare_enemy_action() -> void:
+	if enemy_actions.is_empty():
+		enemy_action_name = "普通攻击"
+		enemy_action_damage_percent = 100
+		enemy_base_action_countdown = max(1, enemy_base_action_countdown)
+		enemy_action_countdown = enemy_base_action_countdown
+		enemy_attack = enemy_base_attack
+		return
+
+	var action := enemy_actions[enemy_action_index % enemy_actions.size()]
+	enemy_action_name = str(action.get("name", "普通攻击"))
+	enemy_action_damage_percent = int(action.get("damage_percent", 100))
+	enemy_base_action_countdown = max(1, int(action.get("countdown", enemy_base_action_countdown)))
+	enemy_action_countdown = enemy_base_action_countdown
+	enemy_attack = int(round(float(enemy_base_attack * enemy_action_damage_percent) / 100.0))
+
+func _advance_enemy_action() -> void:
+	if enemy_actions.is_empty():
+		return
+	enemy_action_index = (enemy_action_index + 1) % enemy_actions.size()
 
 func _shuffle_discard_into_draw_if_low() -> void:
 	if draw_pile.size() > 3:

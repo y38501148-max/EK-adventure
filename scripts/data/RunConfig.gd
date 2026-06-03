@@ -13,3 +13,5 @@ class_name RunConfig
 @export var enemy_algorithm_attribute: StringName = &"模拟"
 @export var enemy_action_countdown: int = 3
 @export var enemy_attack: int = 12
+@export var enemy_actions: Array[Dictionary] = []
+@export_multiline var enemy_description: String = "一台守在模拟题入口的评测机，会用稳定但不留情面的测试点攻击选手。"

@@ -4,11 +4,13 @@ class_name GameRoot
 const CardDefinitionScript := preload("res://scripts/data/CardDefinition.gd")
 const CardMarkdownLoaderScript := preload("res://scripts/data/CardMarkdownLoader.gd")
 const GameStateScript := preload("res://scripts/game/GameState.gd")
+const MonsterMarkdownLoaderScript := preload("res://scripts/data/MonsterMarkdownLoader.gd")
 const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 
 signal return_to_menu_requested
 
 @onready var hud := $Root/Hud
+@onready var monster_view := $Root/EncounterArea/EncounterMargin/MonsterView
 @onready var hand_view := $Root/HandPanel/HandMargin/HandView
 @onready var log_label: Label = $Root/LogLabel
 
@@ -27,6 +29,7 @@ func _ready() -> void:
 
 func _render() -> void:
 	hud.render(state)
+	monster_view.render(state)
 	hand_view.render(state.hand, state)
 
 func _on_phase_changed(_phase: int) -> void:
@@ -64,11 +67,14 @@ func _build_placeholder_config() -> Resource:
 	config.starting_energy = 4
 	config.base_attack = 15
 	config.base_block = 10
-	config.enemy_name = "模拟题守门员"
-	config.enemy_health = 120
-	config.enemy_algorithm_attribute = &"模拟"
-	config.enemy_action_countdown = 3
-	config.enemy_attack = 12
+	var monster := MonsterMarkdownLoaderScript.load_first_monster()
+	config.enemy_name = monster.title
+	config.enemy_health = monster.max_health
+	config.enemy_algorithm_attribute = monster.algorithm_attribute
+	config.enemy_action_countdown = monster.action_countdown
+	config.enemy_attack = monster.attack
+	config.enemy_actions = monster.actions
+	config.enemy_description = monster.description
 	config.starting_deck = _build_markdown_deck()
 	return config
 

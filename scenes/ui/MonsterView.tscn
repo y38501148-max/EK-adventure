@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://monster_view_exploding_konjac"]
+
+[ext_resource type="Script" path="res://scripts/ui/MonsterView.gd" id="1_monster_view"]
+[ext_resource type="Texture2D" path="res://assets/art/monsters/algorithm_sentinel.png" id="2_monster_art"]
+
+[node name="MonsterView" type="PanelContainer"]
+custom_minimum_size = Vector2(520, 280)
+script = ExtResource("1_monster_view")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="Rows" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="Margin/Rows/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "模拟题守门员"
+
+[node name="HpLabel" type="Label" parent="Margin/Rows/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "120/120"
+horizontal_alignment = 2
+
+[node name="Body" type="HBoxContainer" parent="Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Art" type="TextureRect" parent="Margin/Rows/Body"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+texture = ExtResource("2_monster_art")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoColumn" type="VBoxContainer" parent="Margin/Rows/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="AttributeLabel" type="Label" parent="Margin/Rows/Body/InfoColumn"]
+layout_mode = 2
+text = "算法属性：模拟"
+
+[node name="CountdownLabel" type="Label" parent="Margin/Rows/Body/InfoColumn"]
+layout_mode = 2
+text = "行动倒计时：3"
+
+[node name="IntentLabel" type="Label" parent="Margin/Rows/Body/InfoColumn"]
+layout_mode = 2
+text = "意图：攻击 12"
+
+[node name="DescriptionLabel" type="Label" parent="Margin/Rows"]
+layout_mode = 2
+text = "一台守在模拟题入口的评测机。"
+autowrap_mode = 3
