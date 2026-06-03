@@ -3,11 +3,11 @@ class_name HomeRoot
 
 signal training_menu_requested
 
-@onready var slot_label: Label = $Root/Columns/InfoColumn/SlotLabel
-@onready var hero_label: Label = $Root/Columns/InfoColumn/HeroLabel
-@onready var gold_label: Label = $Root/Columns/InfoColumn/GoldLabel
-@onready var level_label: Label = $Root/Columns/InfoColumn/LevelLabel
-@onready var status_label: Label = $Root/StatusPanel/StatusMargin/StatusLabel
+@onready var slot_label: Label = $Overlay/Info/SlotLabel
+@onready var hero_label: Label = $Overlay/Info/HeroLabel
+@onready var gold_label: Label = $Overlay/Info/GoldLabel
+@onready var level_label: Label = $Overlay/Info/LevelLabel
+@onready var status_label: Label = $Overlay/StatusLabel
 
 var save_slot: int = 1
 var snapshot: Dictionary = {}
