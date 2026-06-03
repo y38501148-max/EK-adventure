@@ -12,7 +12,7 @@ func _init(p_runtime_id: int = 0, p_definition: Resource = null) -> void:
 	runtime_id = p_runtime_id
 	definition = p_definition
 
-func display_cost() -> int:
+func display_cost(additional_delta: int = 0) -> int:
 	if definition == null:
 		return 0
-	return max(0, definition.cost + temporary_cost_delta)
+	return max(0, definition.cost + temporary_cost_delta + additional_delta)

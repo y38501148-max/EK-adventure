@@ -2,6 +2,7 @@ extends Control
 class_name GameRoot
 
 const CardDefinitionScript := preload("res://scripts/data/CardDefinition.gd")
+const CardMarkdownLoaderScript := preload("res://scripts/data/CardMarkdownLoader.gd")
 const GameStateScript := preload("res://scripts/game/GameState.gd")
 const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 
@@ -26,7 +27,7 @@ func _ready() -> void:
 
 func _render() -> void:
 	hud.render(state)
-	hand_view.render(state.hand)
+	hand_view.render(state.hand, state)
 
 func _on_phase_changed(_phase: int) -> void:
 	pass
@@ -38,12 +39,13 @@ func _on_draw_requested() -> void:
 
 func _on_end_turn_requested() -> void:
 	state.end_turn()
-	_append_log("回合结束，手牌进入弃牌堆。")
-	state.begin_turn()
+	_append_log(state.last_event_log)
+	if not state.has_lost and not state.has_won:
+		state.begin_turn()
 
 func _on_card_selected(card_id: int) -> void:
 	if state.play_card(card_id):
-		_append_log("打出卡牌 #%d。" % card_id)
+		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能打出卡牌 #%d。" % card_id)
 	_render()
@@ -58,22 +60,33 @@ func _build_placeholder_config() -> Resource:
 	var config := RunConfigScript.new()
 	config.hero_name = Settings.HERO_NAME
 	config.seed = int(Time.get_unix_time_from_system())
-	config.starting_health = 80
-	config.starting_energy = 3
-	config.starting_deck = [
-		_make_card(&"array_slash", "数组切片", CardDefinitionScript.CardType.ATTACK, 1, "造成基础伤害。后续会接入真实效果。"),
-		_make_card(&"dp_guard", "DP 转移", CardDefinitionScript.CardType.SKILL, 1, "获得基础防御。后续会接入真实效果。"),
-		_make_card(&"wa_debug", "WA 调试", CardDefinitionScript.CardType.SKILL, 0, "检视下一步行动。后续会接入真实效果。"),
-		_make_card(&"icpc_balloon", "罚时气球", CardDefinitionScript.CardType.POWER, 2, "建立长期优势。后续会接入真实效果。"),
-		_make_card(&"segment_tree", "线段树展开", CardDefinitionScript.CardType.ATTACK, 2, "面向复杂局面。后续会接入真实效果。")
-	]
+	config.starting_health = 50
+	config.starting_energy = 4
+	config.base_attack = 15
+	config.base_block = 10
+	config.enemy_name = "模拟题守门员"
+	config.enemy_health = 120
+	config.enemy_algorithm_attribute = &"模拟"
+	config.enemy_action_countdown = 3
+	config.enemy_attack = 12
+	config.starting_deck = _build_markdown_deck()
 	return config
 
-func _make_card(id: StringName, title: String, card_type: int, cost: int, description: String) -> Resource:
+func _build_markdown_deck() -> Array[Resource]:
+	var cards: Array[Resource] = CardMarkdownLoaderScript.load_all_cards()
+	if cards.is_empty():
+		return [_make_fallback_card()]
+	if cards.size() == 1:
+		return [cards[0], cards[0], cards[0], cards[0], cards[0]]
+	return cards
+
+func _make_fallback_card() -> Resource:
 	var card := CardDefinitionScript.new()
-	card.id = id
-	card.title = title
-	card.card_type = card_type
-	card.cost = cost
-	card.description = description
+	card.id = &"enumerate"
+	card.title = "枚举"
+	card.card_type = CardDefinitionScript.CardType.ATTACK
+	card.algorithm_attribute = &"模拟"
+	card.cost = 1
+	card.damage_percent = 100
+	card.description = "对单个敌人造成100%伤害"
 	return card

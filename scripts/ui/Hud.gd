@@ -10,12 +10,29 @@ signal return_to_menu_requested
 @onready var hero_label: Label = $Margin/Rows/TopRow/HeroLabel
 @onready var phase_label: Label = $Margin/Rows/TopRow/PhaseLabel
 @onready var stats_label: Label = $Margin/Rows/TopRow/StatsLabel
+@onready var enemy_label: Label = $Margin/Rows/EnemyLabel
 @onready var piles_label: Label = $Margin/Rows/BottomRow/PilesLabel
 
 func render(state: Variant) -> void:
 	hero_label.text = "%s  |  回合 %d" % [Settings.HERO_NAME, state.turn]
 	phase_label.text = "阶段：%s" % _phase_text(state.phase)
-	stats_label.text = "生命 %d  能量 %d/%d" % [state.player_health, state.player_energy, state.max_energy]
+	var cheat_text := "  骗分中" if state.is_cheating else ""
+	stats_label.text = "生命 %d/%d  护盾 %d  费用 %d/%d%s" % [
+		state.player_health,
+		state.player_max_health,
+		state.player_block,
+		state.player_energy,
+		state.max_energy,
+		cheat_text
+	]
+	enemy_label.text = "%s  生命 %d/%d  算法属性 %s  行动倒计时 %d  本回合%s行动" % [
+		state.enemy_name,
+		state.enemy_health,
+		state.enemy_max_health,
+		state.enemy_algorithm_attribute,
+		state.enemy_action_countdown,
+		"已" if state.enemy_acted_this_turn else "未"
+	]
 	piles_label.text = "抽牌堆 %d  手牌 %d  弃牌堆 %d  消耗 %d" % [
 		state.draw_pile.size(),
 		state.hand.size(),

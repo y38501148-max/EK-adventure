@@ -12,7 +12,7 @@ signal card_selected(card_id: int)
 
 var instance: Variant
 
-func render(card: Variant) -> void:
+func render(card: Variant, state: Variant = null) -> void:
 	instance = card
 	if card == null or card.definition == null:
 		title_label.text = "未定义"
@@ -22,8 +22,8 @@ func render(card: Variant) -> void:
 		return
 
 	title_label.text = card.definition.title
-	cost_label.text = str(card.display_cost())
-	type_label.text = _type_text(card.definition.card_type)
+	cost_label.text = str(state.effective_card_cost(card) if state != null else card.display_cost())
+	type_label.text = _type_text(card.definition.card_type, card.definition.algorithm_attribute)
 	description_label.text = card.definition.description
 
 func _gui_input(event: InputEvent) -> void:
@@ -31,15 +31,21 @@ func _gui_input(event: InputEvent) -> void:
 		if instance != null:
 			card_selected.emit(instance.runtime_id)
 
-func _type_text(card_type: int) -> String:
+func _type_text(card_type: int, algorithm_attribute: StringName) -> String:
+	var base_type := ""
 	match card_type:
 		CardDefinitionScript.CardType.ATTACK:
-			return "攻击"
+			base_type = "攻击"
+		CardDefinitionScript.CardType.BLOCK:
+			base_type = "格挡"
 		CardDefinitionScript.CardType.SKILL:
-			return "技能"
+			base_type = "技能"
 		CardDefinitionScript.CardType.POWER:
-			return "能力"
+			base_type = "能力"
 		CardDefinitionScript.CardType.EVENT:
-			return "事件"
+			base_type = "事件"
 		_:
-			return "未知"
+			base_type = "未知"
+	if algorithm_attribute == &"":
+		return base_type
+	return "%s / %s" % [base_type, algorithm_attribute]
