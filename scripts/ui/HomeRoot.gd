@@ -2,7 +2,27 @@ extends Control
 class_name HomeRoot
 
 const CardCatalogScript := preload("res://scripts/data/CardCatalog.gd")
-const RECORD_COMPONENT_TEXTURE := "res://assets/art/ui/record_components/deck_config_components.png"
+const RECORD_COMPONENT_TEXTURE := "res://assets/art/ui/record_components/sliced/record_background_clean.png"
+const RECORD_BUTTON_TEXTURES := {
+	&"tab": {
+		&"normal": "res://assets/art/ui/record_components/sliced/deck_tab_normal.png",
+		&"hover": "res://assets/art/ui/record_components/sliced/deck_tab_hover.png",
+		&"pressed": "res://assets/art/ui/record_components/sliced/deck_tab_pressed.png",
+		&"disabled": "res://assets/art/ui/record_components/sliced/deck_tab_disabled.png"
+	},
+	&"action": {
+		&"normal": "res://assets/art/ui/record_components/sliced/action_button_normal.png",
+		&"hover": "res://assets/art/ui/record_components/sliced/action_button_hover.png",
+		&"pressed": "res://assets/art/ui/record_components/sliced/action_button_pressed.png",
+		&"disabled": "res://assets/art/ui/record_components/sliced/action_button_disabled.png"
+	},
+	&"row": {
+		&"normal": "res://assets/art/ui/record_components/sliced/list_row_normal.png",
+		&"hover": "res://assets/art/ui/record_components/sliced/list_row_hover.png",
+		&"pressed": "res://assets/art/ui/record_components/sliced/list_row_pressed.png",
+		&"disabled": "res://assets/art/ui/record_components/sliced/list_row_disabled.png"
+	}
+}
 
 signal training_menu_requested
 signal record_updated(snapshot: Dictionary)
@@ -134,14 +154,14 @@ func _build_record_panel() -> void:
 	shell.add_child(tabs_title)
 
 	var tabs := VBoxContainer.new()
-	tabs.position = Vector2(40.0, 96.0)
-	tabs.size = Vector2(108.0, 412.0)
-	tabs.add_theme_constant_override("separation", 8)
+	tabs.position = Vector2(39.0, 102.0)
+	tabs.size = Vector2(112.0, 414.0)
+	tabs.add_theme_constant_override("separation", 7)
 	shell.add_child(tabs)
 	for index in range(SaveManager.DEFAULT_DECK_SLOT_COUNT):
 		var tab_button := Button.new()
 		tab_button.text = "卡组 %d" % [index + 1]
-		tab_button.custom_minimum_size = Vector2(106.0, 42.0)
+		tab_button.custom_minimum_size = Vector2(112.0, 44.0)
 		_apply_record_button_style(tab_button, &"tab")
 		tab_button.pressed.connect(_on_record_tab_pressed.bind(index))
 		tabs.add_child(tab_button)
@@ -164,16 +184,16 @@ func _build_record_panel() -> void:
 
 	var save_button := Button.new()
 	save_button.text = "保存"
-	save_button.position = Vector2(620.0, 520.0)
-	save_button.size = Vector2(205.0, 48.0)
+	save_button.position = Vector2(614.0, 515.0)
+	save_button.size = Vector2(218.0, 54.0)
 	_apply_record_button_style(save_button, &"action")
 	save_button.pressed.connect(_on_record_save_pressed)
 	shell.add_child(save_button)
 
 	var close_button := Button.new()
 	close_button.text = "退出"
-	close_button.position = Vector2(848.0, 520.0)
-	close_button.size = Vector2(205.0, 48.0)
+	close_button.position = Vector2(842.0, 515.0)
+	close_button.size = Vector2(218.0, 54.0)
 	_apply_record_button_style(close_button, &"action")
 	close_button.pressed.connect(_on_record_close_pressed)
 	shell.add_child(close_button)
@@ -333,27 +353,21 @@ func _apply_record_button_style(button: Button, kind: StringName) -> void:
 	button.add_theme_color_override("font_disabled_color", Color(0.80, 0.95, 1.0, 0.92))
 	button.add_theme_font_size_override("font_size", 17 if kind == &"row" else 18)
 
-func _make_record_button_style(kind: StringName, state: StringName) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var normal_alpha := 0.04 if kind != &"row" else 0.18
-	var border_alpha := 0.0 if kind != &"row" else 0.16
-	style.bg_color = Color(0.04, 0.10, 0.13, normal_alpha)
-	style.border_color = Color(0.36, 0.86, 0.95, border_alpha)
-	if state == &"hover":
-		style.bg_color = Color(0.05, 0.20, 0.24, 0.30)
-		style.border_color = Color(0.42, 0.92, 1.0, 0.58)
-	elif state == &"pressed":
-		style.bg_color = Color(0.30, 0.20, 0.06, 0.32)
-		style.border_color = Color(1.0, 0.72, 0.30, 0.70)
-	elif state == &"disabled":
-		style.bg_color = Color(0.05, 0.22, 0.28, 0.26)
-		style.border_color = Color(0.48, 0.92, 1.0, 0.52)
-	style.set_border_width_all(1 if style.border_color.a > 0.0 else 0)
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 4
-	style.corner_radius_bottom_right = 4
+func _make_record_button_style(kind: StringName, state: StringName) -> StyleBox:
+	var style := StyleBoxTexture.new()
+	var texture_path: String = RECORD_BUTTON_TEXTURES.get(kind, {}).get(state, "")
+	if texture_path != "" and ResourceLoader.exists(texture_path):
+		style.texture = load(texture_path)
+	style.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	style.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	style.texture_margin_left = 12.0
+	style.texture_margin_right = 12.0
+	style.texture_margin_top = 10.0
+	style.texture_margin_bottom = 10.0
 	if kind == &"row":
-		style.content_margin_left = 12.0
-		style.content_margin_right = 12.0
+		style.content_margin_left = 14.0
+		style.content_margin_right = 14.0
+	else:
+		style.content_margin_left = 10.0
+		style.content_margin_right = 10.0
 	return style
