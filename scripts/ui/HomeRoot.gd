@@ -2,6 +2,8 @@ extends Control
 class_name HomeRoot
 
 const CardCatalogScript := preload("res://scripts/data/CardCatalog.gd")
+const CardInstanceStateScript := preload("res://scripts/game/CardInstanceState.gd")
+const CardViewScene := preload("res://scenes/cards/CardView.tscn")
 const RECORD_COMPONENT_TEXTURE := "res://assets/art/ui/record_components/sliced/record_background_clean.png"
 const RECORD_BUTTON_TEXTURES := {
 	&"tab": {
@@ -15,12 +17,6 @@ const RECORD_BUTTON_TEXTURES := {
 		&"hover": "res://assets/art/ui/record_components/sliced/action_button_hover.png",
 		&"pressed": "res://assets/art/ui/record_components/sliced/action_button_pressed.png",
 		&"disabled": "res://assets/art/ui/record_components/sliced/action_button_disabled.png"
-	},
-	&"row": {
-		&"normal": "res://assets/art/ui/record_components/sliced/list_row_normal.png",
-		&"hover": "res://assets/art/ui/record_components/sliced/list_row_hover.png",
-		&"pressed": "res://assets/art/ui/record_components/sliced/list_row_pressed.png",
-		&"disabled": "res://assets/art/ui/record_components/sliced/list_row_disabled.png"
 	}
 }
 
@@ -37,12 +33,13 @@ var save_slot: int = 1
 var snapshot: Dictionary = {}
 var record_overlay: Control
 var record_tab_buttons: Array[Button] = []
-var record_owned_rows: VBoxContainer
-var record_deck_rows: VBoxContainer
+var record_owned_rows: GridContainer
+var record_deck_rows: GridContainer
 var record_count_label: Label
 var record_status_label: Label
 var selected_record_card_id: String = SaveManager.DEFAULT_CARD_ID
 var selected_record_deck_index: int = 0
+var record_card_runtime_id: int = 1
 
 func configure(slot: int, state_snapshot: Dictionary = {}) -> void:
 	save_slot = clampi(slot, 1, SaveManager.SLOT_COUNT)
@@ -169,11 +166,11 @@ func _build_record_panel() -> void:
 
 	var owned_title := _make_record_label("待选卡牌", Vector2(176.0, 70.0), Vector2(330.0, 24.0), 18)
 	shell.add_child(owned_title)
-	record_owned_rows = _make_record_list(shell, Vector2(172.0, 104.0), Vector2(388.0, 392.0))
+	record_owned_rows = _make_record_card_grid(shell, Vector2(172.0, 104.0), Vector2(388.0, 392.0))
 
 	var deck_title := _make_record_label("出战卡组", Vector2(610.0, 70.0), Vector2(330.0, 24.0), 18)
 	shell.add_child(deck_title)
-	record_deck_rows = _make_record_list(shell, Vector2(606.0, 104.0), Vector2(416.0, 392.0))
+	record_deck_rows = _make_record_card_grid(shell, Vector2(606.0, 104.0), Vector2(416.0, 392.0))
 
 	record_status_label = Label.new()
 	record_status_label.position = Vector2(172.0, 522.0)
@@ -209,22 +206,25 @@ func _make_record_label(text: String, position: Vector2, size: Vector2, font_siz
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	return label
 
-func _make_record_list(parent: Control, position: Vector2, list_size: Vector2) -> VBoxContainer:
+func _make_record_card_grid(parent: Control, position: Vector2, list_size: Vector2) -> GridContainer:
 	var scroll := ScrollContainer.new()
 	scroll.position = position
 	scroll.size = list_size
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	parent.add_child(scroll)
 
-	var rows := VBoxContainer.new()
-	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rows.add_theme_constant_override("separation", 6)
-	scroll.add_child(rows)
-	return rows
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 14)
+	scroll.add_child(grid)
+	return grid
 
 func _refresh_record_panel() -> void:
 	_clear_children(record_owned_rows)
 	_clear_children(record_deck_rows)
+	record_card_runtime_id = 1
 
 	var deck_cards := _get_active_deck_cards()
 	var owned_counts: Dictionary = snapshot.get("owned_card_counts", {})
@@ -233,21 +233,21 @@ func _refresh_record_panel() -> void:
 		if count <= 0:
 			continue
 		var used := _count_card_in_deck(str(card_id), deck_cards)
-		var button := Button.new()
-		button.text = "%s  %d/%d" % [_card_title(str(card_id)), used, count]
-		button.custom_minimum_size = Vector2(0, 36)
-		_apply_record_button_style(button, &"row")
-		button.pressed.connect(_on_owned_card_pressed.bind(str(card_id)))
-		record_owned_rows.add_child(button)
+		var card_slot := _make_record_card_slot(
+			str(card_id),
+			"剩余 %d/%d" % [max(0, count - used), count],
+			_on_owned_record_card_selected.bind(str(card_id))
+		)
+		record_owned_rows.add_child(card_slot)
 
 	for index in range(deck_cards.size()):
 		var card_id := str(deck_cards[index])
-		var button := Button.new()
-		button.text = "%02d  %s" % [index + 1, _card_title(card_id)]
-		button.custom_minimum_size = Vector2(0, 34)
-		_apply_record_button_style(button, &"row")
-		button.pressed.connect(_on_deck_card_pressed.bind(index, card_id))
-		record_deck_rows.add_child(button)
+		var card_slot := _make_record_card_slot(
+			card_id,
+			"%02d / 点击移出" % [index + 1],
+			_on_deck_record_card_selected.bind(index, card_id)
+		)
+		record_deck_rows.add_child(card_slot)
 
 	for index in range(record_tab_buttons.size()):
 		var tab_button := record_tab_buttons[index]
@@ -266,6 +266,12 @@ func _on_record_tab_pressed(index: int) -> void:
 	snapshot["deck_cards"] = _get_active_deck_cards().duplicate()
 	record_status_label.text = "已切换到卡组 %d。" % [selected_record_deck_index + 1]
 	_refresh_record_panel()
+
+func _on_owned_record_card_selected(_runtime_id: int, card_id: String) -> void:
+	_on_owned_card_pressed(card_id)
+
+func _on_deck_record_card_selected(_runtime_id: int, index: int, card_id: String) -> void:
+	_on_deck_card_pressed(index, card_id)
 
 func _on_owned_card_pressed(card_id: String) -> void:
 	selected_record_card_id = card_id
@@ -336,6 +342,32 @@ func _total_owned_cards() -> int:
 func _card_title(card_id: String) -> String:
 	return CardCatalogScript.get_definition(StringName(card_id)).title
 
+func _make_record_card_slot(card_id: String, footer_text: String, selected_callable: Callable) -> Control:
+	var slot := Control.new()
+	slot.custom_minimum_size = Vector2(178.0, 212.0)
+
+	var card_instance := CardInstanceStateScript.new(record_card_runtime_id, CardCatalogScript.get_definition(StringName(card_id)))
+	record_card_runtime_id += 1
+
+	var card_view := CardViewScene.instantiate()
+	card_view.position = Vector2(4.0, 0.0)
+	card_view.size = Vector2(170.0, 180.0)
+	card_view.custom_minimum_size = Vector2(170.0, 180.0)
+	card_view.render(card_instance, null)
+	card_view.card_selected.connect(selected_callable)
+	slot.add_child(card_view)
+
+	var footer := Label.new()
+	footer.position = Vector2(0.0, 182.0)
+	footer.size = Vector2(178.0, 26.0)
+	footer.text = footer_text
+	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	footer.add_theme_font_size_override("font_size", 13)
+	footer.add_theme_color_override("font_color", Color(0.80, 0.92, 0.94, 0.92))
+	slot.add_child(footer)
+	return slot
+
 func _clear_children(node: Node) -> void:
 	for child in node.get_children():
 		child.queue_free()
@@ -351,7 +383,7 @@ func _apply_record_button_style(button: Button, kind: StringName) -> void:
 	button.add_theme_color_override("font_hover_color", Color(0.95, 1.0, 1.0, 1.0))
 	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.88, 0.54, 1.0))
 	button.add_theme_color_override("font_disabled_color", Color(0.80, 0.95, 1.0, 0.92))
-	button.add_theme_font_size_override("font_size", 17 if kind == &"row" else 18)
+	button.add_theme_font_size_override("font_size", 18)
 
 func _make_record_button_style(kind: StringName, state: StringName) -> StyleBox:
 	var style := StyleBoxTexture.new()
@@ -364,10 +396,6 @@ func _make_record_button_style(kind: StringName, state: StringName) -> StyleBox:
 	style.texture_margin_right = 12.0
 	style.texture_margin_top = 10.0
 	style.texture_margin_bottom = 10.0
-	if kind == &"row":
-		style.content_margin_left = 14.0
-		style.content_margin_right = 14.0
-	else:
-		style.content_margin_left = 10.0
-		style.content_margin_right = 10.0
+	style.content_margin_left = 10.0
+	style.content_margin_right = 10.0
 	return style
