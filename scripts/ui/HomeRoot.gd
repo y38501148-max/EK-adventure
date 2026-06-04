@@ -134,14 +134,15 @@ func _build_record_panel() -> void:
 	shell.add_child(tabs_title)
 
 	var tabs := VBoxContainer.new()
-	tabs.position = Vector2(28.0, 100.0)
-	tabs.size = Vector2(116.0, 392.0)
+	tabs.position = Vector2(40.0, 96.0)
+	tabs.size = Vector2(108.0, 412.0)
 	tabs.add_theme_constant_override("separation", 8)
 	shell.add_child(tabs)
 	for index in range(SaveManager.DEFAULT_DECK_SLOT_COUNT):
 		var tab_button := Button.new()
 		tab_button.text = "卡组 %d" % [index + 1]
-		tab_button.custom_minimum_size = Vector2(112.0, 40.0)
+		tab_button.custom_minimum_size = Vector2(106.0, 42.0)
+		_apply_record_button_style(tab_button, &"tab")
 		tab_button.pressed.connect(_on_record_tab_pressed.bind(index))
 		tabs.add_child(tab_button)
 		record_tab_buttons.append(tab_button)
@@ -154,13 +155,6 @@ func _build_record_panel() -> void:
 	shell.add_child(deck_title)
 	record_deck_rows = _make_record_list(shell, Vector2(606.0, 104.0), Vector2(416.0, 392.0))
 
-	var button_row := HBoxContainer.new()
-	button_row.position = Vector2(612.0, 520.0)
-	button_row.size = Vector2(410.0, 48.0)
-	button_row.alignment = BoxContainer.ALIGNMENT_END
-	button_row.add_theme_constant_override("separation", 12)
-	shell.add_child(button_row)
-
 	record_status_label = Label.new()
 	record_status_label.position = Vector2(172.0, 522.0)
 	record_status_label.size = Vector2(410.0, 42.0)
@@ -170,15 +164,19 @@ func _build_record_panel() -> void:
 
 	var save_button := Button.new()
 	save_button.text = "保存"
-	save_button.custom_minimum_size = Vector2(128, 42)
+	save_button.position = Vector2(620.0, 520.0)
+	save_button.size = Vector2(205.0, 48.0)
+	_apply_record_button_style(save_button, &"action")
 	save_button.pressed.connect(_on_record_save_pressed)
-	button_row.add_child(save_button)
+	shell.add_child(save_button)
 
 	var close_button := Button.new()
 	close_button.text = "退出"
-	close_button.custom_minimum_size = Vector2(128, 42)
+	close_button.position = Vector2(848.0, 520.0)
+	close_button.size = Vector2(205.0, 48.0)
+	_apply_record_button_style(close_button, &"action")
 	close_button.pressed.connect(_on_record_close_pressed)
-	button_row.add_child(close_button)
+	shell.add_child(close_button)
 
 	record_overlay.hide()
 
@@ -218,6 +216,7 @@ func _refresh_record_panel() -> void:
 		var button := Button.new()
 		button.text = "%s  %d/%d" % [_card_title(str(card_id)), used, count]
 		button.custom_minimum_size = Vector2(0, 36)
+		_apply_record_button_style(button, &"row")
 		button.pressed.connect(_on_owned_card_pressed.bind(str(card_id)))
 		record_owned_rows.add_child(button)
 
@@ -226,6 +225,7 @@ func _refresh_record_panel() -> void:
 		var button := Button.new()
 		button.text = "%02d  %s" % [index + 1, _card_title(card_id)]
 		button.custom_minimum_size = Vector2(0, 34)
+		_apply_record_button_style(button, &"row")
 		button.pressed.connect(_on_deck_card_pressed.bind(index, card_id))
 		record_deck_rows.add_child(button)
 
@@ -320,13 +320,40 @@ func _clear_children(node: Node) -> void:
 	for child in node.get_children():
 		child.queue_free()
 
-func _make_record_panel_style() -> StyleBoxFlat:
+func _apply_record_button_style(button: Button, kind: StringName) -> void:
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_stylebox_override("normal", _make_record_button_style(kind, &"normal"))
+	button.add_theme_stylebox_override("hover", _make_record_button_style(kind, &"hover"))
+	button.add_theme_stylebox_override("pressed", _make_record_button_style(kind, &"pressed"))
+	button.add_theme_stylebox_override("disabled", _make_record_button_style(kind, &"disabled"))
+	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	button.add_theme_color_override("font_color", Color(0.78, 0.86, 0.88, 0.92))
+	button.add_theme_color_override("font_hover_color", Color(0.95, 1.0, 1.0, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.88, 0.54, 1.0))
+	button.add_theme_color_override("font_disabled_color", Color(0.80, 0.95, 1.0, 0.92))
+	button.add_theme_font_size_override("font_size", 17 if kind == &"row" else 18)
+
+func _make_record_button_style(kind: StringName, state: StringName) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.02, 0.03, 0.04, 0.18)
-	style.border_color = Color(0.35, 0.78, 0.86, 0.42)
-	style.set_border_width_all(1)
-	style.corner_radius_top_left = 6
-	style.corner_radius_top_right = 6
-	style.corner_radius_bottom_left = 6
-	style.corner_radius_bottom_right = 6
+	var normal_alpha := 0.04 if kind != &"row" else 0.18
+	var border_alpha := 0.0 if kind != &"row" else 0.16
+	style.bg_color = Color(0.04, 0.10, 0.13, normal_alpha)
+	style.border_color = Color(0.36, 0.86, 0.95, border_alpha)
+	if state == &"hover":
+		style.bg_color = Color(0.05, 0.20, 0.24, 0.30)
+		style.border_color = Color(0.42, 0.92, 1.0, 0.58)
+	elif state == &"pressed":
+		style.bg_color = Color(0.30, 0.20, 0.06, 0.32)
+		style.border_color = Color(1.0, 0.72, 0.30, 0.70)
+	elif state == &"disabled":
+		style.bg_color = Color(0.05, 0.22, 0.28, 0.26)
+		style.border_color = Color(0.48, 0.92, 1.0, 0.52)
+	style.set_border_width_all(1 if style.border_color.a > 0.0 else 0)
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
+	if kind == &"row":
+		style.content_margin_left = 12.0
+		style.content_margin_right = 12.0
 	return style
