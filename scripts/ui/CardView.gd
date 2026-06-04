@@ -24,6 +24,7 @@ func _ready() -> void:
 	set_process(false)
 
 func render(card: Variant, state: Variant = null) -> void:
+	_ensure_node_refs()
 	instance = card
 	if card == null or card.definition == null:
 		title_label.text = "未定义"
@@ -36,6 +37,16 @@ func render(card: Variant, state: Variant = null) -> void:
 	cost_label.text = str(state.effective_card_cost(card) if state != null else card.display_cost())
 	type_label.text = _type_text(card.definition.card_type, card.definition.algorithm_attribute)
 	description_label.text = card.definition.description
+
+func _ensure_node_refs() -> void:
+	if title_label == null:
+		title_label = $Margin/Rows/TopRow/TitleLabel
+	if cost_label == null:
+		cost_label = $Margin/Rows/TopRow/CostLabel
+	if type_label == null:
+		type_label = $Margin/Rows/TypeLabel
+	if description_label == null:
+		description_label = $Margin/Rows/DescriptionLabel
 
 func _gui_input(event: InputEvent) -> void:
 	if instance == null:
