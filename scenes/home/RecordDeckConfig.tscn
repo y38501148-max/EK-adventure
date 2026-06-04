@@ -1,0 +1,164 @@
+[gd_scene load_steps=4 format=3 uid="uid://record_deck_config"]
+
+[ext_resource type="Script" path="res://scripts/ui/RecordDeckConfig.gd" id="1_record_deck"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/record_components/sliced/record_background_clean.png" id="2_record_bg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+
+[node name="RecordDeckConfig" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_record_deck")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.025, 0.035, 0.72)
+
+[node name="Shell" type="Control" parent="."]
+layout_mode = 0
+offset_left = 96.0
+offset_top = 58.0
+offset_right = 1184.0
+offset_bottom = 662.0
+
+[node name="Background" type="TextureRect" parent="Shell"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+modulate = Color(1, 1, 1, 0.84)
+texture = ExtResource("2_record_bg")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 24.0
+offset_right = 584.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 24
+text = "记录 / 卡组配置"
+
+[node name="RecordCountLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 650.0
+offset_top = 28.0
+offset_right = 985.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 18
+text = "当前卡组 1    出战 10 张 / 拥有 10 张"
+horizontal_alignment = 2
+
+[node name="TabsTitleLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 70.0
+offset_right = 138.0
+offset_bottom = 94.0
+theme_override_font_sizes/font_size = 15
+text = "卡组列表"
+vertical_alignment = 1
+
+[node name="Tabs" type="VBoxContainer" parent="Shell"]
+layout_mode = 0
+offset_left = 39.0
+offset_top = 102.0
+offset_right = 151.0
+offset_bottom = 516.0
+theme_override_constants/separation = 7
+
+[node name="OwnedTitleLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 176.0
+offset_top = 70.0
+offset_right = 506.0
+offset_bottom = 94.0
+theme_override_font_sizes/font_size = 18
+text = "待选卡牌"
+vertical_alignment = 1
+
+[node name="OwnedScroll" type="ScrollContainer" parent="Shell"]
+layout_mode = 0
+offset_left = 172.0
+offset_top = 104.0
+offset_right = 560.0
+offset_bottom = 496.0
+horizontal_scroll_mode = 0
+
+[node name="OwnedGrid" type="GridContainer" parent="Shell/OwnedScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="DeckTitleLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 610.0
+offset_top = 70.0
+offset_right = 940.0
+offset_bottom = 94.0
+theme_override_font_sizes/font_size = 18
+text = "出战卡组"
+vertical_alignment = 1
+
+[node name="DeckScroll" type="ScrollContainer" parent="Shell"]
+layout_mode = 0
+offset_left = 606.0
+offset_top = 104.0
+offset_right = 1022.0
+offset_bottom = 496.0
+horizontal_scroll_mode = 0
+
+[node name="DeckGrid" type="GridContainer" parent="Shell/DeckScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="RecordStatusLabel" type="Label" parent="Shell"]
+layout_mode = 0
+offset_left = 172.0
+offset_top = 522.0
+offset_right = 582.0
+offset_bottom = 564.0
+theme_override_font_sizes/font_size = 15
+text = ""
+vertical_alignment = 1
+
+[node name="SaveButton" type="Button" parent="Shell"]
+layout_mode = 0
+offset_left = 614.0
+offset_top = 515.0
+offset_right = 832.0
+offset_bottom = 569.0
+focus_mode = 0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_button")
+text = "保存"
+
+[node name="CloseButton" type="Button" parent="Shell"]
+layout_mode = 0
+offset_left = 842.0
+offset_top = 515.0
+offset_right = 1060.0
+offset_bottom = 569.0
+focus_mode = 0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_button")
+text = "退出"
+
+[connection signal="pressed" from="Shell/SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="Shell/CloseButton" to="." method="_on_close_button_pressed"]
