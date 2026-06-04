@@ -362,6 +362,7 @@ func _make_record_card_slot(card_id: String, footer_text: String, selected_calla
 	card_view.position = Vector2(4.0, 0.0)
 	card_view.size = Vector2(170.0, 180.0)
 	card_view.custom_minimum_size = Vector2(170.0, 180.0)
+	card_view.drag_enabled = false
 	slot.add_child(card_view)
 	card_view.render(card_instance, null)
 	card_view.card_selected.connect(selected_callable)

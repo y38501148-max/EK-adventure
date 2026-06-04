@@ -13,6 +13,7 @@ signal card_drag_released(card_id: int, release_global_position: Vector2)
 @onready var description_label: Label = $Margin/Rows/DescriptionLabel
 
 var instance: Variant
+var drag_enabled: bool = true
 var _is_dragging := false
 var _press_active := false
 var _press_global_position := Vector2.ZERO
@@ -64,7 +65,8 @@ func _gui_input(event: InputEvent) -> void:
 			card_selected.emit(instance.runtime_id)
 			accept_event()
 	elif event is InputEventMouseMotion and _press_active:
-		_maybe_start_drag(get_viewport().get_mouse_position())
+		if drag_enabled:
+			_maybe_start_drag(get_viewport().get_mouse_position())
 
 func _input(event: InputEvent) -> void:
 	if not _is_dragging:
