@@ -240,12 +240,13 @@ func _refresh_record_panel() -> void:
 		)
 		record_owned_rows.add_child(card_slot)
 
-	for index in range(deck_cards.size()):
-		var card_id := str(deck_cards[index])
+	var deck_counts := _count_cards_by_id(deck_cards)
+	for card_id in deck_counts.keys():
+		var count: int = int(deck_counts[card_id])
 		var card_slot := _make_record_card_slot(
 			card_id,
-			"%02d / 点击移出" % [index + 1],
-			_on_deck_record_card_selected.bind(index, card_id)
+			"出战 %d / 点击移出 1 张" % count,
+			_on_deck_record_card_selected.bind(card_id)
 		)
 		record_deck_rows.add_child(card_slot)
 
@@ -270,8 +271,8 @@ func _on_record_tab_pressed(index: int) -> void:
 func _on_owned_record_card_selected(_runtime_id: int, card_id: String) -> void:
 	_on_owned_card_pressed(card_id)
 
-func _on_deck_record_card_selected(_runtime_id: int, index: int, card_id: String) -> void:
-	_on_deck_card_pressed(index, card_id)
+func _on_deck_record_card_selected(_runtime_id: int, card_id: String) -> void:
+	_on_deck_card_pressed(card_id)
 
 func _on_owned_card_pressed(card_id: String) -> void:
 	selected_record_card_id = card_id
@@ -287,10 +288,11 @@ func _on_owned_card_pressed(card_id: String) -> void:
 		record_status_label.text = "已加入：%s" % _card_title(card_id)
 	_refresh_record_panel()
 
-func _on_deck_card_pressed(index: int, card_id: String) -> void:
+func _on_deck_card_pressed(card_id: String) -> void:
 	selected_record_card_id = card_id
 	var deck_cards := _get_active_deck_cards()
-	if index >= 0 and index < deck_cards.size():
+	var index := deck_cards.find(card_id)
+	if index >= 0:
 		deck_cards.remove_at(index)
 		_set_active_deck_cards(deck_cards)
 		record_status_label.text = "已移出：%s" % _card_title(card_id)
@@ -329,6 +331,13 @@ func _count_card_in_deck(card_id: String, deck_cards: Array) -> int:
 		if str(raw_card_id) == card_id:
 			count += 1
 	return count
+
+func _count_cards_by_id(cards: Array) -> Dictionary:
+	var counts: Dictionary = {}
+	for raw_card_id in cards:
+		var card_id := str(raw_card_id)
+		counts[card_id] = int(counts.get(card_id, 0)) + 1
+	return counts
 
 func _count_deck_card(card_id: String) -> int:
 	return _count_card_in_deck(card_id, _get_active_deck_cards())
