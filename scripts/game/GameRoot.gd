@@ -2,6 +2,7 @@ extends Control
 class_name GameRoot
 
 const CardCatalogScript := preload("res://scripts/data/CardCatalog.gd")
+const CardViewScene := preload("res://scenes/cards/CardView.tscn")
 const GameStateScript := preload("res://scripts/game/GameState.gd")
 const MonsterMarkdownLoaderScript := preload("res://scripts/data/MonsterMarkdownLoader.gd")
 const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
@@ -21,6 +22,8 @@ var pending_snapshot: Dictionary = {}
 var pending_encounter_id: StringName = &"training_test"
 var autosave_enabled: bool = false
 var battle_end_shown: bool = false
+var animation_layer: Control
+var pending_play_animation: Dictionary = {}
 
 func configure(slot: int, snapshot: Dictionary = {}, encounter_id: StringName = &"training_test") -> void:
 	save_slot = clampi(slot, 1, SaveManager.SLOT_COUNT)
@@ -28,6 +31,7 @@ func configure(slot: int, snapshot: Dictionary = {}, encounter_id: StringName = 
 	pending_encounter_id = encounter_id
 
 func _ready() -> void:
+	_create_animation_layer()
 	state.state_changed.connect(_on_state_changed)
 	state.phase_changed.connect(_on_phase_changed)
 	hud.draw_requested.connect(_on_draw_requested)
@@ -54,7 +58,14 @@ func _on_state_changed() -> void:
 	hud.render(state)
 	player_view.render(state)
 	monster_view.render(state)
-	hand_view.render(state.hand, state)
+	var drawn_ids: Array[int] = state.last_drawn_card_ids.duplicate()
+	var draw_origin: Vector2 = hud.get_draw_pile_center_global()
+	hand_view.render(state.hand, state, drawn_ids, draw_origin)
+	if not pending_play_animation.is_empty() and state.last_played_card_destination != &"":
+		_animate_played_card_to_pile()
+	state.last_drawn_card_ids.clear()
+	state.last_played_card_id = 0
+	state.last_played_card_destination = &""
 	if (state.has_won or state.has_lost) and not battle_end_shown:
 		_show_battle_end_dialog()
 	if autosave_enabled:
@@ -83,13 +94,13 @@ func _on_card_selected(card_id: int) -> void:
 	if state.card_requires_target(card_id):
 		_append_log("攻击牌需要拖动到敌人图片上释放。")
 		return
-	if state.play_card(card_id):
+	if _play_card_with_animation(card_id):
 		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能打出卡牌 #%d。" % card_id)
 
 func _on_card_dropped_on_enemy(card_id: int, enemy_id: int) -> void:
-	if state.play_card(card_id, [enemy_id]):
+	if _play_card_with_animation(card_id, [enemy_id]):
 		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能对敌人 #%d 打出卡牌 #%d。" % [enemy_id, card_id])
@@ -100,7 +111,7 @@ func _on_card_drag_released(card_id: int, release_global_position: Vector2) -> v
 		return
 	if state.card_requires_target(card_id):
 		_append_log("攻击牌需要拖动到敌人图片上释放。")
-	elif state.play_card(card_id):
+	elif _play_card_with_animation(card_id):
 		_append_log(state.last_event_log)
 	else:
 		_append_log("现在还不能打出卡牌 #%d。" % card_id)
@@ -115,6 +126,55 @@ func _on_battle_end_confirmed() -> void:
 
 func _append_log(message: String) -> void:
 	log_label.text = message
+
+func _play_card_with_animation(card_id: int, targets: Array = []) -> bool:
+	var card: Variant = state.get_hand_card(card_id)
+	if card != null:
+		pending_play_animation = {
+			"card": card,
+			"origin": hand_view.get_card_global_center(card_id)
+		}
+	var played: bool = state.play_card(card_id, targets)
+	if not played:
+		pending_play_animation.clear()
+	return played
+
+func _create_animation_layer() -> void:
+	animation_layer = Control.new()
+	animation_layer.name = "CardAnimationLayer"
+	animation_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	animation_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	animation_layer.z_index = 1000
+	add_child(animation_layer)
+
+func _animate_played_card_to_pile() -> void:
+	var card: Variant = pending_play_animation.get("card", null)
+	var origin: Vector2 = pending_play_animation.get("origin", hud.get_discard_pile_center_global())
+	pending_play_animation.clear()
+	if card == null:
+		return
+
+	var view := CardViewScene.instantiate()
+	animation_layer.add_child(view)
+	view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	view.custom_minimum_size = HandView.CARD_SIZE
+	view.size = HandView.CARD_SIZE
+	view.pivot_offset = HandView.CARD_SIZE * 0.5
+	view.position = origin - animation_layer.get_global_rect().position - HandView.CARD_SIZE * 0.5
+	view.render(card, state)
+	view.z_index = 1001
+
+	var target: Vector2 = hud.get_discard_pile_center_global()
+	if state.last_played_card_destination == &"exhaust_pile":
+		target += Vector2(0.0, -70.0)
+	var target_position: Vector2 = target - animation_layer.get_global_rect().position - HandView.CARD_SIZE * 0.5
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(view, "position", target_position, 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(view, "scale", Vector2(0.35, 0.35), 0.34).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(view, "modulate:a", 0.0, 0.18).set_delay(0.18)
+	tween.finished.connect(view.queue_free)
 
 func _show_battle_end_dialog() -> void:
 	battle_end_shown = true

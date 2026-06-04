@@ -18,6 +18,18 @@ func _run() -> void:
 	save_manager.ensure_profile_defaults(profile_snapshot)
 	_expect(int(profile_snapshot.get("owned_card_counts", {}).get("enumerate", 0)) == 10, "基础拥有卡组应包含 10 张枚举")
 	_expect(profile_snapshot.get("deck_cards", []).size() == 10, "基础出战卡组应包含 10 张枚举")
+	_expect(profile_snapshot.get("deck_slots", []).size() == 8, "记录功能应提供 8 个可切换卡组")
+
+	var over_limit_deck: Array[String] = []
+	for _index in range(24):
+		over_limit_deck.append("enumerate")
+	var over_limit_snapshot := {
+		"owned_card_counts": {"enumerate": 24},
+		"deck_slots": [over_limit_deck],
+		"active_deck_index": 0
+	}
+	save_manager.ensure_profile_defaults(over_limit_snapshot)
+	_expect(over_limit_snapshot.get("deck_cards", []).size() == 18, "每个卡组最多应保留 18 张初始手牌")
 
 	var battle_snapshot := {
 		"gold": 25,

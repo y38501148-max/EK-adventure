@@ -4,6 +4,8 @@ const SAVE_DIR := "user://saves"
 const SLOT_COUNT := 5
 const DEFAULT_CARD_ID := "enumerate"
 const DEFAULT_BASE_DECK_SIZE := 10
+const DEFAULT_DECK_SLOT_COUNT := 8
+const DEFAULT_MAX_DECK_SIZE := 18
 const PROFILE_DEFAULTS := {
 	"gold": 0,
 	"level": 1,
@@ -55,11 +57,12 @@ func ensure_profile_defaults(snapshot: Dictionary) -> Dictionary:
 		owned_counts[DEFAULT_CARD_ID] = DEFAULT_BASE_DECK_SIZE
 	snapshot["owned_card_counts"] = owned_counts
 
-	var deck_cards: Array[String] = _normalize_deck_cards(snapshot.get("deck_cards", []), owned_counts)
-	if deck_cards.is_empty():
-		for _index in range(DEFAULT_BASE_DECK_SIZE):
-			deck_cards.append(DEFAULT_CARD_ID)
-	snapshot["deck_cards"] = deck_cards
+	var legacy_deck: Array[String] = _normalize_deck_cards(snapshot.get("deck_cards", []), owned_counts)
+	var deck_slots: Array = _normalize_deck_slots(snapshot.get("deck_slots", []), owned_counts, legacy_deck)
+	var active_index := clampi(int(snapshot.get("active_deck_index", 0)), 0, deck_slots.size() - 1)
+	snapshot["active_deck_index"] = active_index
+	snapshot["deck_slots"] = deck_slots
+	snapshot["deck_cards"] = deck_slots[active_index].duplicate()
 	return snapshot
 
 func has_save(slot: int = 1) -> bool:
@@ -186,6 +189,8 @@ func _normalize_deck_cards(raw_deck: Variant, owned_counts: Dictionary) -> Array
 
 	var used_counts: Dictionary = {}
 	for raw_card_id in raw_deck:
+		if deck.size() >= DEFAULT_MAX_DECK_SIZE:
+			break
 		var card_id := str(raw_card_id)
 		if card_id == "":
 			continue
@@ -195,6 +200,29 @@ func _normalize_deck_cards(raw_deck: Variant, owned_counts: Dictionary) -> Array
 			continue
 		deck.append(card_id)
 		used_counts[card_id] = used + 1
+	return deck
+
+func _normalize_deck_slots(raw_slots: Variant, owned_counts: Dictionary, fallback_deck: Array[String]) -> Array:
+	var slots: Array = []
+	if raw_slots is Array:
+		for raw_slot in raw_slots:
+			var deck := _normalize_deck_cards(raw_slot, owned_counts)
+			if deck.is_empty():
+				deck = _make_default_deck()
+			slots.append(deck)
+
+	while slots.size() < DEFAULT_DECK_SLOT_COUNT:
+		var default_deck := fallback_deck.duplicate() if not fallback_deck.is_empty() else _make_default_deck()
+		slots.append(default_deck)
+
+	if slots.size() > DEFAULT_DECK_SLOT_COUNT:
+		slots.resize(DEFAULT_DECK_SLOT_COUNT)
+	return slots
+
+func _make_default_deck() -> Array[String]:
+	var deck: Array[String] = []
+	for _index in range(DEFAULT_BASE_DECK_SIZE):
+		deck.append(DEFAULT_CARD_ID)
 	return deck
 
 func _is_unfinished_battle_state(state: Dictionary) -> bool:

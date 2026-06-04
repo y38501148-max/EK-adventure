@@ -48,6 +48,12 @@ func _on_end_turn_button_pressed() -> void:
 func _on_menu_button_pressed() -> void:
 	return_to_menu_requested.emit()
 
+func get_draw_pile_center_global() -> Vector2:
+	return draw_pile_label.get_global_rect().get_center()
+
+func get_discard_pile_center_global() -> Vector2:
+	return discard_pile_label.get_global_rect().get_center()
+
 func _apply_end_turn_button_style() -> void:
 	end_turn_button.add_theme_stylebox_override("normal", _make_button_style(Color(0.15, 0.42, 0.48, 0.96)))
 	end_turn_button.add_theme_stylebox_override("hover", _make_button_style(Color(0.20, 0.54, 0.60, 1.0)))

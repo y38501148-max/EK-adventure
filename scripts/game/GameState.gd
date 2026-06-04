@@ -60,6 +60,9 @@ var draw_pile: Array = []
 var hand: Array = []
 var discard_pile: Array = []
 var exhaust_pile: Array = []
+var last_drawn_card_ids: Array[int] = []
+var last_played_card_id: int = 0
+var last_played_card_destination: StringName = &""
 
 func setup(config: Resource) -> void:
 	seed = config.seed
@@ -101,6 +104,9 @@ func setup(config: Resource) -> void:
 	hand.clear()
 	discard_pile.clear()
 	exhaust_pile.clear()
+	last_drawn_card_ids.clear()
+	last_played_card_id = 0
+	last_played_card_destination = &""
 
 	for definition in config.starting_deck:
 		var card := CardInstanceStateScript.new(next_card_id, definition)
@@ -127,6 +133,9 @@ func begin_turn() -> void:
 func end_turn() -> void:
 	if _is_combat_over():
 		return
+	last_drawn_card_ids.clear()
+	last_played_card_id = 0
+	last_played_card_destination = &""
 	_set_phase(Phase.END)
 	last_event_log = "结束出牌阶段。"
 	if not enemy_acted_this_turn:
@@ -147,6 +156,9 @@ func end_turn() -> void:
 
 func draw_cards(amount: int) -> int:
 	var drawn := 0
+	last_drawn_card_ids.clear()
+	last_played_card_id = 0
+	last_played_card_destination = &""
 	var draw_capacity := mini(amount, max(0, hand_limit - hand.size()))
 	_shuffle_discard_into_draw_if_needed(draw_capacity)
 	for _index in range(draw_capacity):
@@ -156,6 +168,7 @@ func draw_cards(amount: int) -> int:
 		var card: Variant = draw_pile.pop_back()
 		card.zone = &"hand"
 		hand.append(card)
+		last_drawn_card_ids.append(card.runtime_id)
 		drawn += 1
 	return drawn
 
@@ -178,6 +191,9 @@ func play_card(card_id: int, targets: Array = []) -> bool:
 		return false
 
 	player_energy -= effective_card_cost(card)
+	last_drawn_card_ids.clear()
+	last_played_card_id = 0
+	last_played_card_destination = &""
 	_resolve_card(card, targets)
 	for effect in card.definition.effects:
 		if effect.can_apply(self, card_id, targets):
@@ -283,12 +299,15 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 
 func _move_played_card(card: Variant) -> void:
 	hand.erase(card)
+	last_played_card_id = card.runtime_id
 	if _card_has_tag(card, TAG_EXHAUST):
 		card.zone = &"exhaust_pile"
 		exhaust_pile.append(card)
+		last_played_card_destination = &"exhaust_pile"
 	else:
 		card.zone = &"discard_pile"
 		discard_pile.append(card)
+		last_played_card_destination = &"discard_pile"
 
 func _cards_to_snapshot(cards: Array) -> Array[Dictionary]:
 	var snapshots: Array[Dictionary] = []
