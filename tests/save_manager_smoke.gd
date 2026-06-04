@@ -14,6 +14,11 @@ func _run() -> void:
 	var slot := save_manager.SLOT_COUNT
 	save_manager.delete_save(slot)
 
+	var profile_snapshot := {}
+	save_manager.ensure_profile_defaults(profile_snapshot)
+	_expect(int(profile_snapshot.get("owned_card_counts", {}).get("enumerate", 0)) == 10, "基础拥有卡组应包含 10 张枚举")
+	_expect(profile_snapshot.get("deck_cards", []).size() == 10, "基础出战卡组应包含 10 张枚举")
+
 	var battle_snapshot := {
 		"gold": 25,
 		"level": 2,

@@ -13,6 +13,7 @@ signal return_to_menu_requested
 @onready var enemy_label: Label = $EnemyLabel
 @onready var piles_label: Label = $PilesLabel
 @onready var draw_pile_label: Label = $DrawPileLabel
+@onready var discard_pile_label: Label = $DiscardPileLabel
 @onready var end_turn_button: Button = $EndTurnButton
 
 func _ready() -> void:
@@ -28,10 +29,10 @@ func render(state: Variant) -> void:
 		cheat_text
 	]
 	enemy_label.text = ""
-	var drawable_count: int = state.get_drawable_card_count()
-	draw_pile_label.text = "抽牌区\n%d 张" % drawable_count
-	piles_label.text = "抽牌区 %d  手牌 %d/%d  弃牌 %d  消耗 %d" % [
-		drawable_count,
+	draw_pile_label.text = "抽牌区\n%d 张" % state.draw_pile.size()
+	discard_pile_label.text = "弃牌区\n%d 张" % state.discard_pile.size()
+	piles_label.text = "抽 %d  手牌 %d/%d  弃 %d  删除 %d" % [
+		state.draw_pile.size(),
 		state.hand.size(),
 		state.hand_limit,
 		state.discard_pile.size(),

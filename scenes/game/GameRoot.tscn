@@ -85,22 +85,22 @@ texture = ExtResource("10_enemy_panel")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RightDrawMenuPanel" type="TextureRect" parent="Components"]
+[node name="LeftDrawPilePanel" type="TextureRect" parent="Components"]
 layout_mode = 0
-offset_left = 1089.0
-offset_top = 347.0
-offset_right = 1248.0
-offset_bottom = 390.0
+offset_left = 21.0
+offset_top = 587.0
+offset_right = 180.0
+offset_bottom = 708.0
 texture = ExtResource("11_draw_menu_panel")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="RightDiscardPanel" type="TextureRect" parent="Components"]
 layout_mode = 0
-offset_left = 1097.0
-offset_top = 413.0
-offset_right = 1244.0
-offset_bottom = 532.0
+offset_left = 1102.0
+offset_top = 587.0
+offset_right = 1256.0
+offset_bottom = 708.0
 texture = ExtResource("12_discard_panel")
 expand_mode = 1
 stretch_mode = 5
@@ -157,9 +157,9 @@ offset_bottom = 656.0
 
 [node name="HandPanel" type="Control" parent="Root" unique_id=1399787316]
 anchors_preset = 0
-offset_left = 18.0
+offset_left = 196.0
 offset_top = 600.0
-offset_right = 1264.0
+offset_right = 1088.0
 offset_bottom = 714.0
 mouse_filter = 2
 

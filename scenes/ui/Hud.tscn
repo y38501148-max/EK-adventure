@@ -66,12 +66,25 @@ autowrap_mode = 3
 
 [node name="DrawPileLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 1102.0
-offset_top = 410.0
-offset_right = 1244.0
-offset_bottom = 458.0
+offset_left = 38.0
+offset_top = 612.0
+offset_right = 166.0
+offset_bottom = 688.0
 theme_override_font_sizes/font_size = 18
 text = "抽牌区
+0 张"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="DiscardPileLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1118.0
+offset_top = 612.0
+offset_right = 1246.0
+offset_bottom = 688.0
+theme_override_font_sizes/font_size = 18
+text = "弃牌区
 0 张"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -89,10 +102,10 @@ vertical_alignment = 1
 
 [node name="DrawButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 1110.0
-offset_top = 368.0
-offset_right = 1168.0
-offset_bottom = 400.0
+offset_left = 60.0
+offset_top = 690.0
+offset_right = 132.0
+offset_bottom = 710.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
@@ -104,9 +117,9 @@ text = "抽牌"
 [node name="MenuButton" type="Button" parent="."]
 layout_mode = 0
 offset_left = 1176.0
-offset_top = 368.0
+offset_top = 548.0
 offset_right = 1238.0
-offset_bottom = 400.0
+offset_bottom = 580.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")

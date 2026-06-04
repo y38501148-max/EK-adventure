@@ -147,10 +147,9 @@ func end_turn() -> void:
 
 func draw_cards(amount: int) -> int:
 	var drawn := 0
-	for _index in range(amount):
-		if hand.size() >= hand_limit:
-			break
-		_shuffle_discard_into_draw_if_low()
+	var draw_capacity := mini(amount, max(0, hand_limit - hand.size()))
+	_shuffle_discard_into_draw_if_needed(draw_capacity)
+	for _index in range(draw_capacity):
 		if draw_pile.is_empty():
 			break
 
@@ -462,8 +461,10 @@ func _prepare_enemy_action(use_random: bool = true) -> void:
 	enemy_action_countdown = enemy_base_action_countdown
 	enemy_attack = int(round(float(enemy_base_attack * enemy_action_damage_percent) / 100.0))
 
-func _shuffle_discard_into_draw_if_low() -> void:
-	if draw_pile.size() > 3:
+func _shuffle_discard_into_draw_if_needed(required_cards: int) -> void:
+	if required_cards <= 0:
+		return
+	if draw_pile.size() >= required_cards:
 		return
 	if discard_pile.is_empty():
 		return

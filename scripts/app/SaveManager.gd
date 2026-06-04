@@ -2,6 +2,16 @@ extends Node
 
 const SAVE_DIR := "user://saves"
 const SLOT_COUNT := 5
+const DEFAULT_CARD_ID := "enumerate"
+const DEFAULT_BASE_DECK_SIZE := 10
+const PROFILE_DEFAULTS := {
+	"gold": 0,
+	"level": 1,
+	"experience": 0,
+	"experience_to_next": 100,
+	"player_max_health": 50,
+	"player_health": 50
+}
 const BATTLE_STATE_KEYS := [
 	"turn",
 	"phase",
@@ -35,6 +45,23 @@ const BATTLE_STATE_KEYS := [
 
 var save_dir: String = SAVE_DIR
 
+func ensure_profile_defaults(snapshot: Dictionary) -> Dictionary:
+	for key in PROFILE_DEFAULTS:
+		if not snapshot.has(key):
+			snapshot[key] = PROFILE_DEFAULTS[key]
+
+	var owned_counts: Dictionary = _normalize_owned_card_counts(snapshot.get("owned_card_counts", {}))
+	if int(owned_counts.get(DEFAULT_CARD_ID, 0)) < DEFAULT_BASE_DECK_SIZE:
+		owned_counts[DEFAULT_CARD_ID] = DEFAULT_BASE_DECK_SIZE
+	snapshot["owned_card_counts"] = owned_counts
+
+	var deck_cards: Array[String] = _normalize_deck_cards(snapshot.get("deck_cards", []), owned_counts)
+	if deck_cards.is_empty():
+		for _index in range(DEFAULT_BASE_DECK_SIZE):
+			deck_cards.append(DEFAULT_CARD_ID)
+	snapshot["deck_cards"] = deck_cards
+	return snapshot
+
 func has_save(slot: int = 1) -> bool:
 	return FileAccess.file_exists(get_slot_path(slot))
 
@@ -49,6 +76,7 @@ func has_unfinished_battle(slot: int = 1) -> bool:
 
 func save_snapshot(slot: int, snapshot: Dictionary) -> void:
 	_ensure_save_dir()
+	ensure_profile_defaults(snapshot)
 	var envelope := {
 		"version": 1,
 		"slot": clampi(slot, 1, SLOT_COUNT),
@@ -111,6 +139,7 @@ func get_slot_summary(slot: int) -> Dictionary:
 		}
 
 	var state: Dictionary = envelope.get("state", {})
+	ensure_profile_defaults(state)
 	var battle_prefix := "未完成战斗  " if _is_unfinished_battle_state(state) else ""
 	return {
 		"slot": slot,
@@ -139,6 +168,34 @@ func _ensure_save_dir() -> void:
 	var error := DirAccess.make_dir_recursive_absolute(save_dir)
 	if error != OK:
 		push_error("无法创建存档目录: %s" % save_dir)
+
+func _normalize_owned_card_counts(raw_counts: Variant) -> Dictionary:
+	var counts: Dictionary = {}
+	if not raw_counts is Dictionary:
+		return counts
+	for key in raw_counts:
+		var count: int = max(0, int(raw_counts[key]))
+		if count > 0:
+			counts[str(key)] = count
+	return counts
+
+func _normalize_deck_cards(raw_deck: Variant, owned_counts: Dictionary) -> Array[String]:
+	var deck: Array[String] = []
+	if not raw_deck is Array:
+		return deck
+
+	var used_counts: Dictionary = {}
+	for raw_card_id in raw_deck:
+		var card_id := str(raw_card_id)
+		if card_id == "":
+			continue
+		var owned := int(owned_counts.get(card_id, 0))
+		var used := int(used_counts.get(card_id, 0))
+		if used >= owned:
+			continue
+		deck.append(card_id)
+		used_counts[card_id] = used + 1
+	return deck
 
 func _is_unfinished_battle_state(state: Dictionary) -> bool:
 	return (

@@ -85,6 +85,8 @@ func _start_game(slot: int, should_load: bool) -> void:
 		if snapshot.is_empty():
 			slot_status_label.text = "档位 %d 读取失败。" % slot
 			return
+	SaveManager.ensure_profile_defaults(snapshot)
+	SaveManager.save_snapshot(slot, snapshot)
 
 	menu_panel.hide()
 	slot_panel.hide()
@@ -107,6 +109,7 @@ func _show_home(slot: int, snapshot: Dictionary = {}) -> void:
 		home_root.configure(slot, snapshot)
 	game_mount.add_child(home_root)
 	home_root.connect("training_menu_requested", _on_training_menu_requested)
+	home_root.connect("record_updated", _on_record_updated)
 
 func _on_training_menu_requested() -> void:
 	if SaveManager.has_unfinished_battle(current_slot):
@@ -184,6 +187,11 @@ func _on_return_to_menu_requested() -> void:
 		home_root.show()
 	else:
 		_show_home(current_slot, current_snapshot)
+	_refresh_slot_buttons()
+
+func _on_record_updated(snapshot: Dictionary) -> void:
+	current_snapshot = snapshot
+	SaveManager.save_snapshot(current_slot, current_snapshot)
 	_refresh_slot_buttons()
 
 func _create_resume_battle_dialog() -> void:

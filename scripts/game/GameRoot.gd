@@ -1,8 +1,7 @@
 extends Control
 class_name GameRoot
 
-const CardDefinitionScript := preload("res://scripts/data/CardDefinition.gd")
-const CardMarkdownLoaderScript := preload("res://scripts/data/CardMarkdownLoader.gd")
+const CardCatalogScript := preload("res://scripts/data/CardCatalog.gd")
 const GameStateScript := preload("res://scripts/game/GameState.gd")
 const MonsterMarkdownLoaderScript := preload("res://scripts/data/MonsterMarkdownLoader.gd")
 const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
@@ -144,27 +143,15 @@ func _build_placeholder_config() -> Resource:
 	config.enemy_attack = monster.attack
 	config.enemy_actions = monster.actions
 	config.enemy_description = monster.description
-	config.starting_deck = _build_markdown_deck()
+	config.starting_deck = _build_deck_from_profile()
 	return config
 
-func _build_markdown_deck() -> Array[Resource]:
-	var cards: Array[Resource] = CardMarkdownLoaderScript.load_all_cards()
-	if cards.is_empty():
-		return [_make_fallback_card()]
-	if cards.size() == 1:
-		return [cards[0], cards[0], cards[0], cards[0], cards[0]]
-	return cards
-
-func _make_fallback_card() -> Resource:
-	var card := CardDefinitionScript.new()
-	card.id = &"enumerate"
-	card.title = "枚举"
-	card.card_type = CardDefinitionScript.CardType.ATTACK
-	card.algorithm_attribute = &"模拟"
-	card.cost = 1
-	card.damage_percent = 100
-	card.description = "对单个敌人造成100%伤害"
-	return card
+func _build_deck_from_profile() -> Array[Resource]:
+	var profile := SaveManager.ensure_profile_defaults(pending_snapshot.duplicate(true))
+	var deck: Array[Resource] = []
+	for raw_card_id in profile.get("deck_cards", []):
+		deck.append(CardCatalogScript.get_definition(StringName(str(raw_card_id))))
+	return deck
 
 func _apply_profile_from_snapshot(snapshot: Dictionary) -> void:
 	if snapshot.is_empty():

@@ -99,8 +99,17 @@ func _test_hand_limit_and_shuffle() -> void:
 	shuffle_state.play_card(shuffle_state.hand[0].runtime_id)
 	_expect(shuffle_state.discard_pile.size() == 1, "打出的无消耗牌应进入弃牌堆")
 	shuffle_state.draw_cards(1)
-	_expect(shuffle_state.discard_pile.is_empty(), "抽牌区 <=3 时应将弃牌堆洗回抽牌区")
+	_expect(shuffle_state.discard_pile.is_empty(), "抽牌区不足本次抽牌数量时应将弃牌堆洗回抽牌区")
 	_expect(shuffle_state.hand.size() == 5, "洗回后应能继续抽牌")
+
+	var enough_cards: Array[Resource] = []
+	for index in range(11):
+		enough_cards.append(_make_test_card("充足抽牌%d" % index, CardDefinitionScript.CardType.SKILL, []))
+	var enough_state: Variant = _build_state_with_deck(enough_cards)
+	enough_state.begin_turn()
+	enough_state.play_card(enough_state.hand[0].runtime_id)
+	enough_state.draw_cards(5)
+	_expect(enough_state.discard_pile.size() == 1, "抽牌区足够完成本次抽牌时不应提前洗回弃牌区")
 
 func _test_monster_loader() -> void:
 	var monster: Resource = MonsterMarkdownLoaderScript.load_first_monster()
