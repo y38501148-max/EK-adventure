@@ -1,13 +1,21 @@
-[gd_scene load_steps=5 format=3 uid="uid://training_menu_exploding_konjac"]
+[gd_scene format=3 uid="uid://cddkxy6e54uad"]
 
-[ext_resource type="Script" path="res://scripts/ui/TrainingMenu.gd" id="1_training_menu"]
-[ext_resource type="Texture2D" path="res://assets/art/backgrounds/training_menu_background.png" id="2_training_bg"]
+[ext_resource type="Script" uid="uid://cftv6473n4qc8" path="res://scripts/ui/TrainingMenu.gd" id="1_training_menu"]
+[ext_resource type="Texture2D" uid="uid://t0cpb57cfhl7" path="res://assets/art/backgrounds/training_menu_base_environment.png" id="2_training_bg"]
+[ext_resource type="Texture2D" uid="uid://oqomtr6mcblt" path="res://assets/art/ui/training_menu_components/training_shell_cutout.png" id="3_shell"]
+[ext_resource type="Texture2D" uid="uid://bqs6fgqa43yse" path="res://assets/art/ui/training_menu_components/detail_preview_frame.png" id="4_preview_frame"]
+[ext_resource type="Texture2D" uid="uid://boumd365loh3b" path="res://assets/art/ui/training_menu_components/detail_stat_rows.png" id="5_stat_rows"]
+[ext_resource type="Texture2D" uid="uid://dohqv26fwev0f" path="res://assets/art/ui/training_menu_components/description_panel.png" id="6_description_panel"]
+[ext_resource type="Texture2D" uid="uid://dgnw61f3dafs2" path="res://assets/art/ui/training_menu_components/back_button.png" id="7_back_button"]
+[ext_resource type="Texture2D" uid="uid://c5koa8bp1h54t" path="res://assets/art/ui/training_menu_components/progress_lights.png" id="8_progress_lights"]
+[ext_resource type="Texture2D" uid="uid://dk3u4mmknix8g" path="res://assets/art/ui/training_menu_components/page_prev_button.png" id="9_prev_button"]
+[ext_resource type="Texture2D" uid="uid://cdp8jq7g5wxuc" path="res://assets/art/ui/training_menu_components/page_next_button.png" id="10_next_button"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
 
-[node name="TrainingMenu" type="Control"]
+[node name="TrainingMenu" type="Control" unique_id=9415601]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_training_menu")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=297399582]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +35,7 @@ texture = ExtResource("2_training_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="BackgroundTint" type="ColorRect" parent="."]
+[node name="BackgroundTint" type="ColorRect" parent="." unique_id=1117468411]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,7 +44,96 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.015, 0.018, 0.024, 0.1)
 
-[node name="Overlay" type="Control" parent="."]
+[node name="Components" type="Control" parent="." unique_id=83382027]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Shell" type="TextureRect" parent="Components" unique_id=1799469192]
+layout_mode = 0
+offset_left = 50.0
+offset_top = -33.0
+offset_right = 1198.0
+offset_bottom = 742.0
+texture = ExtResource("3_shell")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BackButtonFrame" type="TextureRect" parent="Components" unique_id=1948695572]
+layout_mode = 0
+offset_left = 77.0
+offset_top = -8.0
+offset_right = 137.0
+offset_bottom = 45.0
+texture = ExtResource("7_back_button")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProgressLights" type="TextureRect" parent="Components" unique_id=322812494]
+layout_mode = 0
+offset_left = 166.0
+offset_top = 7.0
+offset_right = 269.0
+offset_bottom = 22.0
+texture = ExtResource("8_progress_lights")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DetailPreviewFrame" type="TextureRect" parent="Components" unique_id=1976789133]
+layout_mode = 0
+offset_left = 627.0
+offset_top = 78.0
+offset_right = 910.0
+offset_bottom = 329.0
+texture = ExtResource("4_preview_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DetailStatRows" type="TextureRect" parent="Components" unique_id=990755804]
+layout_mode = 0
+offset_left = 937.0
+offset_top = 123.0
+offset_right = 1154.0
+offset_bottom = 298.0
+texture = ExtResource("5_stat_rows")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DescriptionPanel" type="TextureRect" parent="Components" unique_id=666394978]
+layout_mode = 0
+offset_left = 627.0
+offset_top = 382.0
+offset_right = 1159.0
+offset_bottom = 675.0
+texture = ExtResource("6_description_panel")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PreviousPageFrame" type="TextureRect" parent="Components" unique_id=194797797]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 638.0
+offset_right = 207.0
+offset_bottom = 695.0
+texture = ExtResource("9_prev_button")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NextPageFrame" type="TextureRect" parent="Components" unique_id=1735282328]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 630.0
+offset_right = 598.0
+offset_bottom = 685.0
+texture = ExtResource("10_next_button")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Overlay" type="Control" parent="." unique_id=1310965590]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,7 +141,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="Overlay"]
+[node name="TitleLabel" type="Label" parent="Overlay" unique_id=757027326]
+visible = false
 layout_mode = 0
 offset_left = 128.0
 offset_top = 98.0
@@ -54,155 +152,196 @@ theme_override_font_sizes/font_size = 24
 text = "训练副本"
 vertical_alignment = 1
 
-[node name="DungeonList" type="Control" parent="Overlay"]
-layout_mode = 0
-offset_left = 142.0
-offset_top = 154.0
-offset_right = 807.0
-offset_bottom = 602.0
+[node name="DungeonList" type="Control" parent="Overlay" unique_id=200385079]
+anchors_preset = 0
+offset_left = 120.0
+offset_top = 60.0
+offset_right = 598.0
+offset_bottom = 638.0
 
-[node name="Detail" type="Control" parent="Overlay"]
-layout_mode = 0
-offset_left = 870.0
-offset_top = 150.0
-offset_right = 1172.0
-offset_bottom = 590.0
+[node name="Detail" type="Control" parent="Overlay" unique_id=956052374]
+anchors_preset = 0
+offset_left = 627.0
+offset_top = 73.0
+offset_right = 1164.0
+offset_bottom = 667.0
 
-[node name="DetailTitleLabel" type="Label" parent="Overlay/Detail"]
+[node name="DetailTitleLabel" type="Label" parent="Overlay/Detail" unique_id=1622799364]
 layout_mode = 0
-offset_left = 124.0
-offset_top = 6.0
-offset_right = 300.0
-offset_bottom = 36.0
-theme_override_font_sizes/font_size = 20
+offset_left = 367.0
+offset_top = 47.0
+offset_right = 539.0
+offset_bottom = 79.0
+theme_override_font_sizes/font_size = 15
 text = "测试训练 Test"
 vertical_alignment = 1
 
-[node name="DetailSubtitleLabel" type="Label" parent="Overlay/Detail"]
+[node name="DetailSubtitleLabel" type="Label" parent="Overlay/Detail" unique_id=284749280]
 layout_mode = 0
-offset_left = 124.0
-offset_top = 44.0
-offset_right = 300.0
-offset_bottom = 70.0
-theme_override_font_sizes/font_size = 14
-text = "A+B Problem / 1 个战斗节点"
+offset_left = 368.0
+offset_top = 123.0
+offset_right = 540.0
+offset_bottom = 152.0
+theme_override_font_sizes/font_size = 13
+text = "基础训练"
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="RequirementLabel" type="Label" parent="Overlay/Detail"]
+[node name="RequirementLabel" type="Label" parent="Overlay/Detail" unique_id=1052065739]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 142.0
-offset_right = 288.0
-offset_bottom = 188.0
-theme_override_font_sizes/font_size = 14
-text = "推荐等级：1    进入限制：完成角色初始化后可进入    消耗金币：0"
+offset_left = 373.0
+offset_top = 201.0
+offset_right = 544.0
+offset_bottom = 234.0
+theme_override_font_sizes/font_size = 12
+text = "消耗金币：0"
 autowrap_mode = 3
 
-[node name="RewardLabel" type="Label" parent="Overlay/Detail"]
+[node name="RewardLabel" type="Label" parent="Overlay/Detail" unique_id=718168355]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 196.0
-offset_right = 288.0
-offset_bottom = 222.0
+offset_left = 27.0
+offset_top = 346.0
+offset_right = 507.0
+offset_bottom = 392.0
 theme_override_font_sizes/font_size = 14
-text = "奖励：胜利获得 100 金钱"
+text = "推荐等级：1
+奖励：胜利获得 100 金钱"
 autowrap_mode = 3
 
-[node name="EnemyLabel" type="Label" parent="Overlay/Detail"]
+[node name="DescriptionScroll" type="ScrollContainer" parent="Overlay/Detail" unique_id=613361568]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 230.0
-offset_right = 288.0
-offset_bottom = 256.0
+offset_left = 28.0
+offset_top = 410.0
+offset_right = 488.0
+offset_bottom = 471.0
+horizontal_scroll_mode = 0
+
+[node name="DescriptionLabel" type="Label" parent="Overlay/Detail/DescriptionScroll" unique_id=1460048283]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 14
-text = "预计遭遇：算法哨兵"
+text = "用于熟悉训练战斗的基础流程：查看费用、抽牌、出牌、拖拽攻击、获得护盾、结束回合并领取胜利奖励。"
 autowrap_mode = 3
 
-[node name="DescriptionLabel" type="Label" parent="Overlay/Detail"]
+[node name="EnterButton" type="Button" parent="Overlay/Detail" unique_id=571639496]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 264.0
-offset_right = 288.0
-offset_bottom = 304.0
-theme_override_font_sizes/font_size = 14
-text = "用于验证基础费用、抽牌、攻击、防御、回合结束与胜利结算的训练副本。"
-autowrap_mode = 3
-
-[node name="EnterButton" type="Button" parent="Overlay/Detail"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 385.0
-offset_right = 278.0
-offset_bottom = 440.0
+offset_left = 378.0
+offset_top = 538.0
+offset_right = 506.0
+offset_bottom = 584.0
 focus_mode = 0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
 text = "进入训练"
 
-[node name="BottomSummary" type="Control" parent="Overlay"]
+[node name="PreviousPageButton" type="Button" parent="Overlay" unique_id=960123788]
 layout_mode = 0
+offset_left = 120.0
+offset_top = 641.0
+offset_right = 206.0
+offset_bottom = 697.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+
+[node name="PageDots" type="Control" parent="Overlay" unique_id=1463619752]
+anchors_preset = 0
+offset_left = 280.0
+offset_top = 648.0
+offset_right = 344.0
+offset_bottom = 678.0
+
+[node name="PageDot1" type="Panel" parent="Overlay/PageDots" unique_id=7425759]
+layout_mode = 0
+offset_top = 4.0
+offset_right = 20.0
+offset_bottom = 24.0
+
+[node name="PageDot2" type="Panel" parent="Overlay/PageDots" unique_id=722979050]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 4.0
+offset_right = 52.0
+offset_bottom = 24.0
+
+[node name="NextPageButton" type="Button" parent="Overlay" unique_id=25317515]
+layout_mode = 0
+offset_left = 501.0
+offset_top = 629.0
+offset_right = 579.0
+offset_bottom = 683.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+
+[node name="BottomSummary" type="Control" parent="Overlay" unique_id=35695198]
+visible = false
+anchors_preset = 0
 offset_left = 74.0
 offset_top = 646.0
 offset_right = 340.0
 offset_bottom = 684.0
 
-[node name="SlotLabel" type="Label" parent="Overlay/BottomSummary"]
+[node name="SlotLabel" type="Label" parent="Overlay/BottomSummary" unique_id=392766020]
 layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
 offset_right = 78.0
 offset_bottom = 34.0
 theme_override_font_sizes/font_size = 15
 text = "档位 1"
 vertical_alignment = 1
 
-[node name="GoldLabel" type="Label" parent="Overlay/BottomSummary"]
+[node name="GoldLabel" type="Label" parent="Overlay/BottomSummary" unique_id=434560331]
 layout_mode = 0
 offset_left = 78.0
-offset_top = 0.0
 offset_right = 180.0
 offset_bottom = 34.0
 theme_override_font_sizes/font_size = 15
 text = "金钱：0"
 vertical_alignment = 1
 
-[node name="LevelLabel" type="Label" parent="Overlay/BottomSummary"]
+[node name="LevelLabel" type="Label" parent="Overlay/BottomSummary" unique_id=58275829]
 layout_mode = 0
 offset_left = 180.0
-offset_top = 0.0
 offset_right = 260.0
 offset_bottom = 34.0
 theme_override_font_sizes/font_size = 15
 text = "等级：1"
 vertical_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="Overlay"]
+[node name="StatusLabel" type="Label" parent="Overlay" unique_id=1588080042]
 layout_mode = 0
-offset_left = 348.0
-offset_top = 646.0
-offset_right = 948.0
-offset_bottom = 684.0
+offset_left = 648.0
+offset_top = 612.0
+offset_right = 1018.0
+offset_bottom = 650.0
 theme_override_font_sizes/font_size = 16
 text = "选择副本后点击进入。"
 vertical_alignment = 1
 
-[node name="BackButton" type="Button" parent="Overlay"]
+[node name="BackButton" type="Button" parent="Overlay" unique_id=1068445938]
 layout_mode = 0
-offset_left = 1010.0
-offset_top = 650.0
-offset_right = 1194.0
-offset_bottom = 692.0
+offset_left = 77.0
+offset_top = -8.0
+offset_right = 137.0
+offset_bottom = 45.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "返回"
 
 [connection signal="pressed" from="Overlay/Detail/EnterButton" to="." method="_on_enter_button_pressed"]
+[connection signal="pressed" from="Overlay/PreviousPageButton" to="." method="_on_previous_page_button_pressed"]
+[connection signal="pressed" from="Overlay/NextPageButton" to="." method="_on_next_page_button_pressed"]
 [connection signal="pressed" from="Overlay/BackButton" to="." method="_on_back_button_pressed"]

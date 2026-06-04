@@ -2,8 +2,10 @@ extends PanelContainer
 class_name CardView
 
 const CardDefinitionScript := preload("res://scripts/data/CardDefinition.gd")
+const DRAG_START_DISTANCE := 8.0
 
 signal card_selected(card_id: int)
+signal card_drag_released(card_id: int, release_global_position: Vector2)
 
 @onready var title_label: Label = $Margin/Rows/TopRow/TitleLabel
 @onready var cost_label: Label = $Margin/Rows/TopRow/CostLabel
@@ -11,6 +13,15 @@ signal card_selected(card_id: int)
 @onready var description_label: Label = $Margin/Rows/DescriptionLabel
 
 var instance: Variant
+var _is_dragging := false
+var _press_active := false
+var _press_global_position := Vector2.ZERO
+var _drag_origin_position := Vector2.ZERO
+var _drag_offset := Vector2.ZERO
+var _original_z_index := 0
+
+func _ready() -> void:
+	set_process(false)
 
 func render(card: Variant, state: Variant = null) -> void:
 	instance = card
@@ -27,38 +38,70 @@ func render(card: Variant, state: Variant = null) -> void:
 	description_label.text = card.definition.description
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if instance != null:
-			card_selected.emit(instance.runtime_id)
-
-func _get_drag_data(_at_position: Vector2) -> Variant:
 	if instance == null:
-		return null
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var mouse_position := get_viewport().get_mouse_position()
+		if event.pressed:
+			_begin_press(mouse_position)
+			accept_event()
+		elif _is_dragging:
+			_finish_drag(mouse_position)
+			accept_event()
+		elif _press_active:
+			_press_active = false
+			card_selected.emit(instance.runtime_id)
+			accept_event()
+	elif event is InputEventMouseMotion and _press_active:
+		_maybe_start_drag(get_viewport().get_mouse_position())
 
-	set_drag_preview(_build_drag_preview())
-	return {
-		"kind": "card",
-		"card_id": instance.runtime_id
-	}
+func _input(event: InputEvent) -> void:
+	if not _is_dragging:
+		return
+	var mouse_position := get_viewport().get_mouse_position()
+	if event is InputEventMouseMotion:
+		_update_drag(mouse_position)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_finish_drag(mouse_position)
+		get_viewport().set_input_as_handled()
 
-func _build_drag_preview() -> Control:
-	var preview := PanelContainer.new()
-	preview.custom_minimum_size = Vector2(150, 64)
+func _process(_delta: float) -> void:
+	if _is_dragging:
+		_update_drag(get_viewport().get_mouse_position())
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 10)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_right", 10)
-	margin.add_theme_constant_override("margin_bottom", 8)
-	preview.add_child(margin)
+func _begin_press(mouse_position: Vector2) -> void:
+	_press_active = true
+	_press_global_position = mouse_position
+	_drag_origin_position = position
+	_drag_offset = mouse_position - global_position
 
-	var label := Label.new()
-	label.text = instance.definition.title if instance != null and instance.definition != null else "卡牌"
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	margin.add_child(label)
-	return preview
+func _maybe_start_drag(mouse_position: Vector2) -> void:
+	if mouse_position.distance_to(_press_global_position) < DRAG_START_DISTANCE:
+		return
+	_press_active = false
+	_is_dragging = true
+	_original_z_index = z_index
+	z_index = 1000
+	set_process(true)
+	_update_drag(mouse_position)
+
+func _update_drag(mouse_position: Vector2) -> void:
+	global_position = mouse_position - _drag_offset
+
+func _finish_drag(mouse_position: Vector2) -> void:
+	if instance == null:
+		_reset_drag_state()
+		return
+	var card_id: int = instance.runtime_id
+	_reset_drag_state()
+	card_drag_released.emit(card_id, mouse_position)
+
+func _reset_drag_state() -> void:
+	_press_active = false
+	_is_dragging = false
+	position = _drag_origin_position
+	z_index = _original_z_index
+	set_process(false)
 
 func _type_text(card_type: int, algorithm_attribute: StringName) -> String:
 	var base_type := ""

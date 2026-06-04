@@ -145,7 +145,8 @@ func end_turn() -> void:
 	hand = retained_hand
 	state_changed.emit()
 
-func draw_cards(amount: int) -> void:
+func draw_cards(amount: int) -> int:
+	var drawn := 0
 	for _index in range(amount):
 		if hand.size() >= hand_limit:
 			break
@@ -156,6 +157,11 @@ func draw_cards(amount: int) -> void:
 		var card: Variant = draw_pile.pop_back()
 		card.zone = &"hand"
 		hand.append(card)
+		drawn += 1
+	return drawn
+
+func get_drawable_card_count() -> int:
+	return draw_pile.size() + discard_pile.size()
 
 func can_play_card(card_id: int, targets: Array = []) -> bool:
 	var card: Variant = get_hand_card(card_id)
@@ -418,7 +424,7 @@ func _perform_enemy_action() -> void:
 		return
 	if is_cheating:
 		has_lost = true
-		last_event_log += " %s 使用%s再次攻击，骗分失败。" % [enemy_name, enemy_action_name]
+		last_event_log += " %s 使用%s再次攻击。骗分失败。" % [enemy_name, enemy_action_name]
 		_set_phase(Phase.GAME_OVER)
 		return
 
@@ -428,7 +434,7 @@ func _perform_enemy_action() -> void:
 	player_health = max(0, player_health - damage)
 	if player_health == 0:
 		is_cheating = true
-		last_event_log += " %s 使用%s造成 %d 点伤害，进入骗分状态。" % [enemy_name, enemy_action_name, damage]
+		last_event_log += " %s 使用%s造成 %d 点伤害。开始骗分。" % [enemy_name, enemy_action_name, damage]
 	else:
 		last_event_log += " %s 使用%s造成 %d 点伤害。" % [enemy_name, enemy_action_name, damage]
 

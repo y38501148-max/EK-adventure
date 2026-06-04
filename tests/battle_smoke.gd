@@ -27,6 +27,8 @@ func _run() -> void:
 	_expect(state.player_health == 50, "初始血量应为 50")
 	_expect(state.max_energy == 4 and state.player_energy == 4, "每回合费用应为 4")
 	_expect(state.hand.size() == 5, "测试牌组应抽到 5 张枚举")
+	_expect(state.draw_cards(1) == 0, "只有 5 张枚举时，初始抽满后不应再抽到新牌")
+	_expect(state.get_drawable_card_count() == 0, "只有 5 张枚举且都在手牌时，抽牌区应显示 0")
 
 	var first_attack_id: int = state.hand[0].runtime_id
 	_expect(not state.can_play_card(first_attack_id), "攻击牌没有目标时不应可打出")
@@ -52,12 +54,14 @@ func _run() -> void:
 	cheat_state.enemy_action_countdown = 1
 	cheat_state.play_card(cheat_state.hand[0].runtime_id, [0])
 	_expect(cheat_state.is_cheating, "生命归 0 应进入骗分状态")
+	_expect(cheat_state.last_event_log.contains("开始骗分"), "生命归 0 时应提示开始骗分")
 	_expect(not cheat_state.has_lost, "第一次归 0 不应立刻失败")
 	_expect(cheat_state.effective_card_cost(cheat_state.hand[0]) == 2, "骗分状态下所有卡费用 +1")
 	cheat_state.end_turn()
 	cheat_state.begin_turn()
 	cheat_state.end_turn()
 	_expect(cheat_state.has_lost, "骗分状态下再次被怪物攻击应失败")
+	_expect(cheat_state.last_event_log.contains("骗分失败"), "骗分失败时应有明确提示")
 
 	if not _failed:
 		print("Battle smoke passed.")
@@ -105,7 +109,7 @@ func _test_monster_loader() -> void:
 	_expect(monster.algorithm_attribute != &"", "第一只怪物应有算法属性")
 
 	if monster.title == "A+B Problem":
-		_expect(monster.max_health == 45, "A+B Problem 血量应为 45")
+		_expect(monster.max_health == 129, "A+B Problem 血量应为 129")
 		_expect(monster.attack == 3, "A+B Problem 基础攻击应为 3")
 		_expect(monster.actions.size() == 2, "A+B Problem 应有两种攻击")
 		_expect(monster.actions[0].get("name") == "普通攻击", "第一种攻击应为普通攻击")

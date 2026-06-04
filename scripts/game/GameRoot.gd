@@ -10,9 +10,9 @@ const RunConfigScript := preload("res://scripts/data/RunConfig.gd")
 signal return_to_menu_requested
 
 @onready var hud := $Root/Hud
-@onready var player_view := $Root/HandPanel/HandMargin/BottomRow/PlayerView
-@onready var monster_view := $Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea/MonsterView
-@onready var hand_view := $Root/HandPanel/HandMargin/BottomRow/HandView
+@onready var player_view := $Root/PlayerView
+@onready var monster_view := $Root/MonsterView
+@onready var hand_view := $Root/HandPanel/HandView
 @onready var log_label: Label = $Root/LogLabel
 @onready var battle_end_dialog: AcceptDialog = $BattleEndDialog
 
@@ -35,6 +35,7 @@ func _ready() -> void:
 	hud.end_turn_requested.connect(_on_end_turn_requested)
 	hud.return_to_menu_requested.connect(_on_return_to_menu_requested)
 	hand_view.card_selected.connect(_on_card_selected)
+	hand_view.card_drag_released.connect(_on_card_drag_released)
 	monster_view.card_dropped_on_enemy.connect(_on_card_dropped_on_enemy)
 	battle_end_dialog.confirmed.connect(_on_battle_end_confirmed)
 
@@ -55,7 +56,7 @@ func _on_state_changed() -> void:
 	player_view.render(state)
 	monster_view.render(state)
 	hand_view.render(state.hand, state)
-	if state.has_won and not battle_end_shown:
+	if (state.has_won or state.has_lost) and not battle_end_shown:
 		_show_battle_end_dialog()
 	if autosave_enabled:
 		SaveManager.save_snapshot(save_slot, state.to_snapshot())
@@ -64,8 +65,13 @@ func _on_phase_changed(_phase: int) -> void:
 	pass
 
 func _on_draw_requested() -> void:
-	state.draw_cards(1)
-	_append_log("调试抽牌：补 1 张占位卡。")
+	var drawn := state.draw_cards(1)
+	if drawn > 0:
+		_append_log("抽牌：补充 %d 张。" % drawn)
+	elif state.hand.size() >= state.hand_limit:
+		_append_log("手牌已达上限，无法继续抽牌。")
+	else:
+		_append_log("抽牌区已空，没有可抽的牌。")
 	_on_state_changed()
 
 func _on_end_turn_requested() -> void:
@@ -89,7 +95,20 @@ func _on_card_dropped_on_enemy(card_id: int, enemy_id: int) -> void:
 	else:
 		_append_log("现在还不能对敌人 #%d 打出卡牌 #%d。" % [enemy_id, card_id])
 
+func _on_card_drag_released(card_id: int, release_global_position: Vector2) -> void:
+	if monster_view.get_global_rect().has_point(release_global_position):
+		_on_card_dropped_on_enemy(card_id, 0)
+		return
+	if state.card_requires_target(card_id):
+		_append_log("攻击牌需要拖动到敌人图片上释放。")
+	elif state.play_card(card_id):
+		_append_log(state.last_event_log)
+	else:
+		_append_log("现在还不能打出卡牌 #%d。" % card_id)
+
 func _on_return_to_menu_requested() -> void:
+	if autosave_enabled:
+		SaveManager.save_snapshot(save_slot, state.to_snapshot())
 	return_to_menu_requested.emit()
 
 func _on_battle_end_confirmed() -> void:
@@ -101,7 +120,8 @@ func _append_log(message: String) -> void:
 func _show_battle_end_dialog() -> void:
 	battle_end_shown = true
 	battle_end_dialog.title = "战斗结束"
-	battle_end_dialog.dialog_text = "%s\n副本已完成，返回主菜单。" % state.last_event_log
+	var result_text := "副本已完成" if state.has_won else "战斗失败"
+	battle_end_dialog.dialog_text = "%s\n%s，返回主菜单。" % [state.last_event_log, result_text]
 	battle_end_dialog.popup_centered()
 
 func _build_placeholder_config() -> Resource:

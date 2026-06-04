@@ -1,13 +1,21 @@
-[gd_scene load_steps=7 format=3 uid="uid://game_root_exploding_konjac"]
+[gd_scene format=3 uid="uid://cimab1y5fj6qs"]
 
-[ext_resource type="Script" path="res://scripts/game/GameRoot.gd" id="1_game_root"]
+[ext_resource type="Script" uid="uid://ccq4xijq2kiqx" path="res://scripts/game/GameRoot.gd" id="1_game_root"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="2_hud"]
-[ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="3_hand_view"]
+[ext_resource type="Script" uid="uid://bmbtudg54bfxu" path="res://scripts/ui/HandView.gd" id="3_hand_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MonsterView.tscn" id="4_monster_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlayerView.tscn" id="5_player_view"]
-[ext_resource type="Texture2D" path="res://assets/art/backgrounds/training_test_battle.png" id="6_battle_bg"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/training_test_battle_base_environment.png" id="6_battle_bg"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/log_panel.png" id="7_log_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/battlefield_frame.png" id="8_battlefield"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/player_panel.png" id="9_player_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/right_enemy_panel.png" id="10_enemy_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/right_draw_menu_panel.png" id="11_draw_menu_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/right_discard_panel.png" id="12_discard_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/right_end_turn_panel.png" id="13_end_turn_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/battle_components/hand_panel.png" id="14_hand_panel"]
 
-[node name="GameRoot" type="Control"]
+[node name="GameRoot" type="Control" unique_id=1806768172]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_game_root")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=856789608]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,84 +35,157 @@ texture = ExtResource("6_battle_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Root" type="VBoxContainer" parent="."]
+[node name="Components" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+mouse_filter = 2
 
-[node name="Hud" parent="Root" unique_name_in_owner=true instance=ExtResource("2_hud")]
-layout_mode = 2
+[node name="LogPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 367.0
+offset_top = 64.0
+offset_right = 872.0
+offset_bottom = 147.0
+texture = ExtResource("7_log_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="EncounterArea" type="PanelContainer" parent="Root"]
-layout_mode = 2
-size_flags_vertical = 3
+[node name="BattlefieldFrame" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 168.0
+offset_top = 287.0
+offset_right = 1123.0
+offset_bottom = 480.0
+texture = ExtResource("8_battlefield")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="EncounterMargin" type="MarginContainer" parent="Root/EncounterArea"]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
+[node name="PlayerPanelFrame" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 459.0
+offset_right = 321.0
+offset_bottom = 577.0
+texture = ExtResource("9_player_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Battlefield" type="HBoxContainer" parent="Root/EncounterArea/EncounterMargin"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 64
-alignment = 1
+[node name="RightEnemyPanel" type="TextureRect" parent="Components"]
+visible = false
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 283.0
+offset_right = 1247.0
+offset_bottom = 343.0
+texture = ExtResource("10_enemy_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="FieldSpacerLeft" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="RightDrawMenuPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 1089.0
+offset_top = 347.0
+offset_right = 1248.0
+offset_bottom = 390.0
+texture = ExtResource("11_draw_menu_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="EnemyArea" type="HBoxContainer" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 24
-alignment = 1
+[node name="RightDiscardPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 1097.0
+offset_top = 413.0
+offset_right = 1244.0
+offset_bottom = 532.0
+texture = ExtResource("12_discard_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="MonsterView" parent="Root/EncounterArea/EncounterMargin/Battlefield/EnemyArea" instance=ExtResource("4_monster_view")]
-layout_mode = 2
+[node name="RightEndTurnPanel" type="TextureRect" parent="Components"]
+visible = false
+layout_mode = 0
+offset_left = 1089.0
+offset_top = 551.0
+offset_right = 1256.0
+offset_bottom = 614.0
+texture = ExtResource("13_end_turn_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="FieldSpacerRight" type="Control" parent="Root/EncounterArea/EncounterMargin/Battlefield"]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="HandPanelFrame" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 562.0
+offset_right = 1270.0
+offset_bottom = 710.0
+texture = ExtResource("14_hand_panel")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="HandPanel" type="PanelContainer" parent="Root"]
-custom_minimum_size = Vector2(0, 210)
-layout_mode = 2
+[node name="Root" type="Control" parent="." unique_id=1921765342]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="HandMargin" type="MarginContainer" parent="Root/HandPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 14
+[node name="Hud" parent="Root" unique_id=708317279 instance=ExtResource("2_hud")]
+layout_mode = 1
+offset_left = -1.0
+offset_right = -1.0
 
-[node name="BottomRow" type="HBoxContainer" parent="Root/HandPanel/HandMargin"]
-layout_mode = 2
-theme_override_constants/separation = 18
+[node name="MonsterView" parent="Root" unique_id=588711218 instance=ExtResource("4_monster_view")]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 190.0
+offset_right = 830.0
+offset_bottom = 464.0
 
-[node name="PlayerView" parent="Root/HandPanel/HandMargin/BottomRow" instance=ExtResource("5_player_view")]
-layout_mode = 2
+[node name="PlayerView" parent="Root" unique_id=974521179 instance=ExtResource("5_player_view")]
+custom_minimum_size = Vector2(248, 196)
+layout_mode = 0
+offset_left = 21.0
+offset_top = 460.0
+offset_right = 303.0
+offset_bottom = 656.0
 
-[node name="HandView" type="HBoxContainer" parent="Root/HandPanel/HandMargin/BottomRow" unique_name_in_owner=true]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
+[node name="HandPanel" type="Control" parent="Root" unique_id=1399787316]
+anchors_preset = 0
+offset_left = 18.0
+offset_top = 600.0
+offset_right = 1264.0
+offset_bottom = 714.0
+mouse_filter = 2
+
+[node name="HandView" type="Control" parent="Root/HandPanel" unique_id=204181896]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("3_hand_view")
 
-[node name="LogLabel" type="Label" parent="Root" unique_name_in_owner=true]
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-text = "框架已启动。"
+[node name="LogLabel" type="Label" parent="Root" unique_id=431034700]
+layout_mode = 0
+offset_left = 392.0
+offset_top = 122.0
+offset_right = 858.0
+offset_bottom = 146.0
+theme_override_font_sizes/font_size = 13
+text = ""
 horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
-[node name="BattleEndDialog" type="AcceptDialog" parent="."]
+[node name="BattleEndDialog" type="AcceptDialog" parent="." unique_id=706779490]
 title = "战斗结束"
 position = Vector2i(0, 36)
 size = Vector2i(360, 120)

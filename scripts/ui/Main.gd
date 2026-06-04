@@ -15,6 +15,7 @@ const TRAINING_MENU_SCENE := preload("res://scenes/home/TrainingMenu.tscn")
 var home_root: Node
 var training_menu: Node
 var game_root: Node
+var resume_battle_dialog: ConfirmationDialog
 var slot_mode: StringName = &"new"
 var current_slot: int = 1
 var current_snapshot: Dictionary = {}
@@ -22,6 +23,7 @@ var current_snapshot: Dictionary = {}
 func _ready() -> void:
 	Settings.apply_defaults()
 	subtitle_label.text = "%s 正在准备他的第一场算法冒险" % Settings.HERO_NAME
+	_create_resume_battle_dialog()
 	_build_slot_buttons()
 
 func _on_start_button_pressed() -> void:
@@ -107,6 +109,13 @@ func _show_home(slot: int, snapshot: Dictionary = {}) -> void:
 	home_root.connect("training_menu_requested", _on_training_menu_requested)
 
 func _on_training_menu_requested() -> void:
+	if SaveManager.has_unfinished_battle(current_slot):
+		resume_battle_dialog.dialog_text = "当前档位有未完成的训练战斗，是否进入？\n选择“否”会删除当前战斗数据并进入训练副本列表。"
+		resume_battle_dialog.popup_centered()
+		return
+	_open_training_menu()
+
+func _open_training_menu() -> void:
 	if home_root != null:
 		home_root.hide()
 	if game_root != null:
@@ -130,6 +139,9 @@ func _on_training_menu_back_requested() -> void:
 		home_root.show()
 
 func _on_training_test_requested() -> void:
+	_start_training_battle(current_snapshot, &"training_test")
+
+func _start_training_battle(snapshot: Dictionary, encounter_id: StringName) -> void:
 	if home_root != null:
 		home_root.hide()
 	if training_menu != null:
@@ -140,9 +152,25 @@ func _on_training_test_requested() -> void:
 		game_root = null
 	game_root = GAME_ROOT_SCENE.instantiate()
 	if game_root.has_method("configure"):
-		game_root.configure(current_slot, current_snapshot, &"training_test")
+		game_root.configure(current_slot, snapshot, encounter_id)
 	game_mount.add_child(game_root)
 	game_root.connect("return_to_menu_requested", _on_return_to_menu_requested)
+
+func _on_resume_battle_confirmed() -> void:
+	var envelope := SaveManager.load_snapshot(current_slot)
+	var snapshot: Dictionary = envelope.get("state", {})
+	if snapshot.is_empty():
+		current_snapshot = {}
+		_open_training_menu()
+		return
+	current_snapshot = snapshot
+	_start_training_battle(snapshot, &"resume")
+
+func _on_resume_battle_canceled() -> void:
+	SaveManager.clear_unfinished_battle(current_slot)
+	var envelope := SaveManager.load_snapshot(current_slot)
+	current_snapshot = envelope.get("state", {})
+	_open_training_menu()
 
 func _on_return_to_menu_requested() -> void:
 	if game_root != null:
@@ -157,3 +185,12 @@ func _on_return_to_menu_requested() -> void:
 	else:
 		_show_home(current_slot, current_snapshot)
 	_refresh_slot_buttons()
+
+func _create_resume_battle_dialog() -> void:
+	resume_battle_dialog = ConfirmationDialog.new()
+	resume_battle_dialog.title = "未完成的战斗"
+	resume_battle_dialog.ok_button_text = "进入"
+	resume_battle_dialog.cancel_button_text = "不进入"
+	add_child(resume_battle_dialog)
+	resume_battle_dialog.confirmed.connect(_on_resume_battle_confirmed)
+	resume_battle_dialog.canceled.connect(_on_resume_battle_canceled)

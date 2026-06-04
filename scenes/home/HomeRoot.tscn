@@ -1,14 +1,25 @@
-[gd_scene load_steps=6 format=3 uid="uid://home_root_exploding_konjac"]
+[gd_scene format=3 uid="uid://dbnp7dkjl5s4k"]
 
-[ext_resource type="Script" path="res://scripts/ui/HomeRoot.gd" id="1_home_root"]
-[ext_resource type="Texture2D" path="res://assets/art/avatar.png" id="2_avatar"]
-[ext_resource type="Texture2D" path="res://assets/art/backgrounds/home_menu_background.png" id="3_home_bg"]
+[ext_resource type="Script" uid="uid://dsseway04ekwh" path="res://scripts/ui/HomeRoot.gd" id="1_home_root"]
+[ext_resource type="Texture2D" uid="uid://mf3wkgps1wps" path="res://assets/art/avatar.png" id="2_avatar"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/home_menu_base_environment.png" id="3_home_bg"]
+[ext_resource type="Texture2D" path="res://assets/art/home_icpc_centerpiece.png" id="4_centerpiece"]
+[ext_resource type="Shader" path="res://resources/themes/circle_mask.gdshader" id="5_circle_mask"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/home_components/left_panel.png" id="6_left_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/home_components/right_panel.png" id="7_right_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/home_components/bottom_status_panel.png" id="8_bottom_panel"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/home_components/center_ring.png" id="9_center_ring"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/home_components/center_platform.png" id="10_center_platform"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
 
-[node name="HomeRoot" type="Control"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_centerpiece"]
+shader = ExtResource("5_circle_mask")
+shader_parameter/edge_softness = 0.012
+
+[node name="HomeRoot" type="Control" unique_id=2084938473]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_home_root")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1522550495]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +39,7 @@ texture = ExtResource("3_home_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="BackgroundTint" type="ColorRect" parent="."]
+[node name="BackgroundTint" type="ColorRect" parent="." unique_id=1230005124]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,7 +48,66 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.015, 0.018, 0.024, 0.12)
 
-[node name="Overlay" type="Control" parent="."]
+[node name="Components" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 23.0
+offset_right = 394.0
+offset_bottom = 551.0
+texture = ExtResource("6_left_panel")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CenterPlatform" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 299.0
+offset_top = 432.0
+offset_right = 973.0
+offset_bottom = 589.0
+texture = ExtResource("10_center_platform")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CenterRing" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 475.0
+offset_top = 111.0
+offset_right = 805.0
+offset_bottom = 441.0
+texture = ExtResource("9_center_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RightPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 973.0
+offset_top = 42.0
+offset_right = 1260.0
+offset_bottom = 605.0
+texture = ExtResource("7_right_panel")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BottomStatusPanel" type="TextureRect" parent="Components"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 614.0
+offset_right = 1263.0
+offset_bottom = 710.0
+texture = ExtResource("8_bottom_panel")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Overlay" type="Control" parent="." unique_id=1967209488]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,182 +115,201 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Info" type="Control" parent="Overlay"]
+[node name="CenterpieceImage" type="TextureRect" parent="Overlay"]
 layout_mode = 0
-offset_left = 52.0
-offset_top = 188.0
-offset_right = 400.0
-offset_bottom = 448.0
+offset_left = 485.0
+offset_top = 121.0
+offset_right = 795.0
+offset_bottom = 431.0
+material = SubResource("ShaderMaterial_centerpiece")
+texture = ExtResource("4_centerpiece")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="SlotLabel" type="Label" parent="Overlay/Info"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 230.0
-offset_bottom = 34.0
-theme_override_font_sizes/font_size = 19
-text = "档位 1"
-vertical_alignment = 1
+[node name="Info" type="Control" parent="Overlay" unique_id=1370877280]
+anchors_preset = 0
+offset_left = 47.0
+offset_top = 74.0
+offset_right = 390.0
+offset_bottom = 276.0
 
-[node name="HeroLabel" type="Label" parent="Overlay/Info"]
+[node name="Avatar" type="TextureRect" parent="Overlay/Info" unique_id=1699455236]
 layout_mode = 0
-offset_left = 0.0
-offset_top = 56.0
-offset_right = 330.0
-offset_bottom = 104.0
-theme_override_font_sizes/font_size = 34
-text = "ExplodingKonjac"
-vertical_alignment = 1
-
-[node name="GoldLabel" type="Label" parent="Overlay/Info"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 126.0
-offset_right = 230.0
-offset_bottom = 162.0
-theme_override_font_sizes/font_size = 22
-text = "金钱：0"
-vertical_alignment = 1
-
-[node name="LevelLabel" type="Label" parent="Overlay/Info"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 182.0
-offset_right = 230.0
-offset_bottom = 218.0
-theme_override_font_sizes/font_size = 22
-text = "等级：1"
-vertical_alignment = 1
-
-[node name="AttributeButton" type="Button" parent="Overlay/Info"]
-layout_mode = 0
-offset_left = 28.0
-offset_top = 262.0
-offset_right = 320.0
-offset_bottom = 314.0
-focus_mode = 0
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "属性"
-
-[node name="Avatar" type="TextureRect" parent="Overlay"]
-layout_mode = 0
-offset_left = 550.0
-offset_top = 184.0
-offset_right = 810.0
-offset_bottom = 444.0
+offset_left = 1.0
+offset_top = 14.0
+offset_right = 119.0
+offset_bottom = 132.0
 texture = ExtResource("2_avatar")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ActionButtons" type="Control" parent="Overlay"]
+[node name="SlotLabel" type="Label" parent="Overlay/Info" unique_id=2017386343]
+visible = false
 layout_mode = 0
-offset_left = 985.0
-offset_top = 142.0
-offset_right = 1238.0
-offset_bottom = 528.0
+offset_top = 124.0
+offset_right = 150.0
+offset_bottom = 150.0
+theme_override_font_sizes/font_size = 16
+text = "档位 1"
 
-[node name="StoryButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="HeroLabel" type="Label" parent="Overlay/Info" unique_id=134328058]
 layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
+offset_left = 150.0
+offset_top = 22.0
+offset_right = 347.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 18
+text = "ExplodingKonjac"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="LevelLabel" type="Label" parent="Overlay/Info" unique_id=450683645]
+layout_mode = 0
+offset_left = 157.0
+offset_top = 59.0
+offset_right = 354.0
+offset_bottom = 89.0
+theme_override_font_sizes/font_size = 18
+text = "等级：1"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ExperienceLabel" type="Label" parent="Overlay/Info" unique_id=738795191]
+layout_mode = 0
+offset_left = 155.0
+offset_top = 101.0
+offset_right = 352.0
+offset_bottom = 131.0
+theme_override_font_sizes/font_size = 18
+text = "经验：0/100"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ActionButtons" type="Control" parent="Overlay" unique_id=1109283076]
+anchors_preset = 0
+offset_left = 985.0
+offset_top = 75.0
+offset_right = 1238.0
+offset_bottom = 596.0
+
+[node name="AttributeButton" type="Button" parent="Overlay/ActionButtons" unique_id=1386715763]
+layout_mode = 0
 offset_right = 253.0
 offset_bottom = 52.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "故事"
+text = "属性"
 
-[node name="TrainingButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="StoryButton" type="Button" parent="Overlay/ActionButtons" unique_id=1000623079]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 67.0
 offset_right = 253.0
 offset_bottom = 119.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "训练"
+text = "故事"
 
-[node name="SortieButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="TrainingButton" type="Button" parent="Overlay/ActionButtons" unique_id=242361523]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 134.0
 offset_right = 253.0
 offset_bottom = 186.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "出击"
+text = "训练"
 
-[node name="StudyButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="SortieButton" type="Button" parent="Overlay/ActionButtons" unique_id=1301422154]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 201.0
 offset_right = 253.0
 offset_bottom = 253.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "学习"
+text = "出击"
 
-[node name="RelicButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="StudyButton" type="Button" parent="Overlay/ActionButtons" unique_id=1560739472]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 268.0
 offset_right = 253.0
 offset_bottom = 320.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-text = "遗物"
+text = "学习"
 
-[node name="BagButton" type="Button" parent="Overlay/ActionButtons"]
+[node name="RelicButton" type="Button" parent="Overlay/ActionButtons" unique_id=740895302]
 layout_mode = 0
-offset_left = 0.0
 offset_top = 335.0
 offset_right = 253.0
 offset_bottom = 387.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+text = "遗物"
+
+[node name="BagButton" type="Button" parent="Overlay/ActionButtons" unique_id=1194843676]
+layout_mode = 0
+offset_top = 402.0
+offset_right = 253.0
+offset_bottom = 454.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
 text = "背包"
 
-[node name="StatusLabel" type="Label" parent="Overlay"]
+[node name="RecordButton" type="Button" parent="Overlay/ActionButtons" unique_id=806434088]
 layout_mode = 0
-offset_left = 54.0
-offset_top = 646.0
-offset_right = 1218.0
-offset_bottom = 686.0
+offset_top = 469.0
+offset_right = 253.0
+offset_bottom = 521.0
+focus_mode = 0
 theme_override_font_sizes/font_size = 18
-text = "主页已载入。"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+text = "记录"
+
+[node name="StatusLabel" type="Label" parent="Overlay" unique_id=1874864329]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 638.0
+offset_right = 1226.0
+offset_bottom = 678.0
+theme_override_font_sizes/font_size = 18
+text = "欢迎来到ExplodingKonjac的历险记！一起成为ACM大神，获得World Final 金牌吧！"
 vertical_alignment = 1
 
-[connection signal="pressed" from="Overlay/Info/AttributeButton" to="." method="_on_attribute_button_pressed"]
+[connection signal="pressed" from="Overlay/ActionButtons/AttributeButton" to="." method="_on_attribute_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/StoryButton" to="." method="_on_story_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/TrainingButton" to="." method="_on_training_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/SortieButton" to="." method="_on_sortie_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/StudyButton" to="." method="_on_study_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/RelicButton" to="." method="_on_relic_button_pressed"]
 [connection signal="pressed" from="Overlay/ActionButtons/BagButton" to="." method="_on_bag_button_pressed"]
+[connection signal="pressed" from="Overlay/ActionButtons/RecordButton" to="." method="_on_record_button_pressed"]
