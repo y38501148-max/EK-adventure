@@ -30,6 +30,7 @@ func _run() -> void:
 	}
 	save_manager.ensure_profile_defaults(over_limit_snapshot)
 	_expect(over_limit_snapshot.get("deck_cards", []).size() == 18, "每个卡组最多应保留 18 张初始手牌")
+	_test_battle_snapshot_merge_preserves_decks()
 
 	var battle_snapshot := {
 		"gold": 25,
@@ -68,6 +69,42 @@ func _run() -> void:
 	if not _failed:
 		print("Save manager smoke passed.")
 	save_manager.free()
+
+func _test_battle_snapshot_merge_preserves_decks() -> void:
+	var profile_snapshot := {
+		"gold": 5,
+		"level": 2,
+		"owned_card_counts": {"enumerate": 10},
+		"active_deck_index": 1,
+		"deck_slots": [
+			["enumerate", "enumerate"],
+			["enumerate", "enumerate", "enumerate"],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[]
+		],
+		"deck_cards": ["enumerate", "enumerate", "enumerate"]
+	}
+	var battle_snapshot := {
+		"gold": 105,
+		"level": 2,
+		"encounter_id": "training_test",
+		"has_won": true,
+		"draw_pile": [],
+		"hand": [],
+		"discard_pile": [],
+		"exhaust_pile": []
+	}
+	var merged := save_manager.merge_battle_snapshot(profile_snapshot, battle_snapshot)
+	_expect(
+		merged.get("deck_slots", [])[1] == ["enumerate", "enumerate", "enumerate"],
+		"战斗保存合并应保留记录中配置的出战卡组"
+	)
+	_expect(merged.get("deck_cards", []) == ["enumerate", "enumerate", "enumerate"], "当前出战卡组不应被战斗牌堆覆盖")
+	_expect(int(merged.get("gold", 0)) == 105, "战斗保存合并仍应写入最新金币")
 
 func _expect(condition: bool, message: String) -> void:
 	if condition:

@@ -69,7 +69,7 @@ func _on_state_changed() -> void:
 	if (state.has_won or state.has_lost) and not battle_end_shown:
 		_show_battle_end_dialog()
 	if autosave_enabled:
-		SaveManager.save_snapshot(save_slot, state.to_snapshot())
+		SaveManager.save_snapshot(save_slot, _build_save_snapshot())
 
 func _on_phase_changed(_phase: int) -> void:
 	pass
@@ -118,7 +118,7 @@ func _on_card_drag_released(card_id: int, release_global_position: Vector2) -> v
 
 func _on_return_to_menu_requested() -> void:
 	if autosave_enabled:
-		SaveManager.save_snapshot(save_slot, state.to_snapshot())
+		SaveManager.save_snapshot(save_slot, _build_save_snapshot())
 	return_to_menu_requested.emit()
 
 func _on_battle_end_confirmed() -> void:
@@ -218,3 +218,6 @@ func _apply_profile_from_snapshot(snapshot: Dictionary) -> void:
 		return
 	state.player_gold = int(snapshot.get("gold", state.player_gold))
 	state.player_level = int(snapshot.get("level", state.player_level))
+
+func _build_save_snapshot() -> Dictionary:
+	return SaveManager.merge_battle_snapshot(pending_snapshot, state.to_snapshot())

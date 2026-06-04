@@ -93,6 +93,12 @@ func save_snapshot(slot: int, snapshot: Dictionary) -> void:
 		return
 	file.store_string(JSON.stringify(envelope, "\t"))
 
+func merge_battle_snapshot(profile_snapshot: Dictionary, battle_snapshot: Dictionary) -> Dictionary:
+	var merged := profile_snapshot.duplicate(true)
+	for key in battle_snapshot:
+		merged[key] = battle_snapshot[key]
+	return merged
+
 func load_snapshot(slot: int = 1) -> Dictionary:
 	if not has_save(slot):
 		return {}
